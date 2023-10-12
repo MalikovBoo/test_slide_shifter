@@ -25,26 +25,21 @@ while True:
         x, y = lmList[9][1], lmList[9][2]
 
         # Проверяем расстояние между указательным и средним пальцем
-        length, _, _ = detector.findDistance(8, 12, img, draw=False)
+        length_next, _, _ = detector.findDistance(4, 8, img, draw=False)
+        length_prev, _, _ = detector.findDistance(4, 12, img, draw=False)
 
-        if length < 70 and not slide_switch_active:
-            slide_switch_active = True
-            cx, cy = x, y
-        elif length >= 70:
-            slide_switch_active = False
+
+        if slide_not_switched:
+            if length_next <= 70:
+                pyautogui.press('right')
+                slide_not_switched = False
+            elif length_prev <= 70:
+                pyautogui.press('left')
+                slide_not_switched = False
+        elif length_next > 70 and length_prev > 70:
             slide_not_switched = True
+        print(slide_not_switched)
 
-        print(slide_switch_active)
-
-        if slide_switch_active:
-            # Если изменение позиции по оси X превышает порог (например, 100 пикселей)
-            if abs(x - cx) > 100 and slide_not_switched:
-                if x > cx:
-                    pyautogui.press('right')
-                    slide_not_switched = False
-                else:
-                    pyautogui.press('left')
-                    slide_not_switched = False
 
     cv2.imshow("Image", img)
     cv2.waitKey(1)
