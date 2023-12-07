@@ -17,10 +17,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
                            QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QLabel, QMainWindow, QPushButton,
                                QSizePolicy, QStatusBar, QWidget)
+import main
 
 
-class Ui_SlideShifter(object):
-    def setupUi(self, SlideShifter):
+class UiSlideShifter(object):
+    def setup_ui(self, SlideShifter):
         if not SlideShifter.objectName():
             SlideShifter.setObjectName(u"SlideShifter")
         SlideShifter.resize(400, 720)
@@ -53,20 +54,35 @@ class Ui_SlideShifter(object):
                                  "color: rgb(255, 255, 255);\n"
                                  "font: 900 36pt \"Futura\";")
         SlideShifter.setCentralWidget(self.centralwidget)
-        self.statusbar = QStatusBar(SlideShifter)
-        self.statusbar.setObjectName(u"statusbar")
-        SlideShifter.setStatusBar(self.statusbar)
+        # self.statusbar = QStatusBar(SlideShifter)
+        # self.statusbar.setObjectName(u"statusbar")
+        # SlideShifter.setStatusBar(self.statusbar)
 
-        self.retranslateUi(SlideShifter)
+        self.retranslate_ui(SlideShifter)
 
         QMetaObject.connectSlotsByName(SlideShifter)
 
-    # setupUi
+        self.do_actions()
 
-    def retranslateUi(self, SlideShifter):
+    def retranslate_ui(self, SlideShifter):
         SlideShifter.setWindowTitle(QCoreApplication.translate("SlideShifter", u"SlideShifter", None))
         self.start_button.setText(QCoreApplication.translate("SlideShifter", u"Start", None))
         self.stop_button.setText(QCoreApplication.translate("SlideShifter", u"Stop", None))
         self.instruction_button.setText(QCoreApplication.translate("SlideShifter", u"Instruction", None))
         self.label.setText(QCoreApplication.translate("SlideShifter", u"Slide Shifter", None))
-    # retranslateUi
+
+    def do_actions(self):
+        self.instruction_button.clicked.connect(self.open_instruction)
+        self.start_button.clicked.connect(self.start_hand_tracking)
+        self.stop_button.clicked.connect(self.stop_hand_tracking)
+
+    def open_instruction(self):
+        print("instruction is working")
+
+    def start_hand_tracking(self):
+        main.is_started = True
+        print("start is working")
+
+    def stop_hand_tracking(self):
+        main.is_started = False
+        print("stop is working")

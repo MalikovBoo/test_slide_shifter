@@ -2,65 +2,70 @@ import cv2
 import hand_tracking as htm
 import pyautogui
 
-# Инициализация видеокамеры
-cap = cv2.VideoCapture(0)
-cap.set(3, 1280)
-cap.set(4, 720)
+is_started = False
 
-# Инициализация детектора руки
-detector = htm.HandDetector(detection_con=0.8)
 
-# Начальное положение большого пальца на ладони
-start_x = None
+def start_hand_tracking():
+    # Инициализация видеокамеры
+    cap = cv2.VideoCapture(0)
+    cap.set(3, 150)
+    cap.set(4, 200)
 
-# Начальное положение центра ладони
-cx, cy = 0, 0
+    # Инициализация детектора руки
+    detector = htm.HandDetector(detection_con=0.8)
 
-# Флаг активации переключения слайдов
-slide_switch_active = False
-slide_not_switched = True
+    # Начальное положение большого пальца на ладони
+    start_x = None
 
-while True:
-    # Захват кадра с камеры
-    success, img = cap.read()
-    img = cv2.flip(img, 1)
+    # Флаг активации переключения слайдов
+    slide_not_switched = True
 
-    # Обнаружение руки на кадре
-    img = detector.find_hands(img)
-    lm_list, _ = detector.find_position(img)
+    while True:
+        # Захват кадра с камеры
+        success, img = cap.read()
+        image = cv2.flip(img, 1)
+        img = detector.find_hands(image)
 
-    if len(lm_list) != 0:
-        # Находим координаты x большого пальца
-        x = lm_list[4][1]
+        if is_started:
+            # Обнаружение руки на кадре
+            lm_list, _ = detector.find_position(img)
 
-        # Проверяем расстояние между указательным и средним пальцем
-        length_1, _, _ = detector.find_distance(4, 8, img, draw=False)
-        length_2, _, _ = detector.find_distance(4, 12, img, draw=False)
+            if len(lm_list) != 0:
+                # Находим координаты x большого пальца
+                x = lm_list[4][1]
 
-        if slide_not_switched:
-            if length_1 + length_2 <= 130:
-                # Если начальное положение не определено, устанавливаем его
-                if start_x is None:
-                    start_x = x
+                # Проверяем расстояние между указательным и средним пальцем
+                length_1, _, _ = detector.find_distance(4, 8, img, draw=False)
+                length_2, _, _ = detector.find_distance(4, 12, img, draw=False)
 
-                # print("ready to slide")
+                if slide_not_switched:
+                    if length_1 + length_2 <= 130:
+                        # Если начальное положение не определено, устанавливаем его
+                        if start_x is None:
+                            start_x = x
 
-                if x > start_x + 90:  # Если рука двигается вправо
-                    print("Left slide")
-                    pyautogui.press('left')
-                    start_x = None  # Обновляем начальное положение
-                    slide_not_switched = False
+                        # print("ready to slide")
 
-                elif x < start_x - 90:  # Если рука двигается влево
-                    print("Right slide")
-                    pyautogui.press('right')
-                    start_x = None  # Обновляем начальное положение
-                    slide_not_switched = False
+                        if x > start_x + 90:  # Если рука двигается вправо
+                            print("Left slide")
+                            pyautogui.press('left')
+                            start_x = None  # Обновляем начальное положение
+                            slide_not_switched = False
 
-        elif length_1 + length_2 > 120:
-            slide_not_switched = True
-        # print(slide_not_switched)
+                        elif x < start_x - 90:  # Если рука двигается влево
+                            print("Right slide")
+                            pyautogui.press('right')
+                            start_x = None  # Обновляем начальное положение
+                            slide_not_switched = False
 
-    # Отображение окна с названием "Slide Shifter"
-    cv2.imshow("Slide Shifter", img)
-    cv2.waitKey(1)
+                elif length_1 + length_2 > 120:
+                    slide_not_switched = True
+                # print(slide_not_switched)
+
+        # Отображение окна
+        cv2.imshow("SlideShifterVideo", img)
+        cv2.waitKey(1)
+
+
+if __name__ == "__main__":
+    start_hand_tracking()
