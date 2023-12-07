@@ -1,5 +1,5 @@
 import cv2
-import HandTrackingModule as htm
+import hand_tracking as htm
 import pyautogui
 
 # Инициализация видеокамеры
