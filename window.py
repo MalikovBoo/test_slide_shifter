@@ -23,6 +23,7 @@ class Ui_SlideShifter(object):
         if not SlideShifter.objectName():
             SlideShifter.setObjectName(u"SlideShifter")
         SlideShifter.resize(400, 720)
+        SlideShifter.move(0, 0)
         SlideShifter.setStyleSheet(u"background-color: rgb(40, 40, 40);")
         self.centralwidget = QWidget(SlideShifter)
         self.centralwidget.setObjectName(u"centralwidget")

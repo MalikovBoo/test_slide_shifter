@@ -9,6 +9,9 @@ video_on = True
 def hand_tracking_function():
     # Инициализация видеокамеры
     cap = cv2.VideoCapture(0)
+    video_window_title = "SlideShifterVideo"
+    cv2.namedWindow(video_window_title, cv2.WINDOW_NORMAL)
+    cv2.moveWindow(video_window_title, 400, 0)
 
     # Инициализация детектора руки
     detector = htm.HandDetector(detection_con=0.8)
@@ -63,7 +66,7 @@ def hand_tracking_function():
 
         # Отображение окна, только если video_on равно True
         frame_re = cv2.resize(img, (1024, 576))
-        cv2.imshow("SlideShifterVideo", frame_re)
+        cv2.imshow(video_window_title, frame_re)
 
         cv2.waitKey(1)
 
