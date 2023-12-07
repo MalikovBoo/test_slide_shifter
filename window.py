@@ -8,81 +8,84 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-                            QMetaObject, QObject, QPoint, QRect,
-                            QSize, QTime, QUrl, Qt)
-from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
-                           QFont, QFontDatabase, QGradient, QIcon,
-                           QImage, QKeySequence, QLinearGradient, QPainter,
-                           QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QLabel, QMainWindow, QPushButton,
-                               QSizePolicy, QStatusBar, QWidget)
+from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect)
+from PySide6.QtWidgets import (QLabel, QPushButton,
+                               QWidget)
+
 import main
 
 
-class UiSlideShifter(object):
-    def setup_ui(self, SlideShifter):
+class Ui_SlideShifter(object):
+    def __init__(self):
+        self.cnt = 0
+
+    def setupUi(self, SlideShifter):
         if not SlideShifter.objectName():
             SlideShifter.setObjectName(u"SlideShifter")
         SlideShifter.resize(400, 720)
-        SlideShifter.setStyleSheet(u"background-color: rgb(70, 70, 70);\n"
-                                   "background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0 rgba(255, 230, 230, 206), stop:0.35 rgba(255, 188, 188, 80), stop:0.4 rgba(255, 162, 162, 74), stop:0.425 rgba(255, 132, 132, 175), stop:0.44 rgba(252, 128, 128, 80), stop:1 rgba(255, 255, 255, 0));")
+        SlideShifter.setStyleSheet(u"background-color: rgb(40, 40, 40);")
         self.centralwidget = QWidget(SlideShifter)
         self.centralwidget.setObjectName(u"centralwidget")
         self.start_button = QPushButton(self.centralwidget)
         self.start_button.setObjectName(u"start_button")
-        self.start_button.setGeometry(QRect(30, 320, 340, 150))
-        self.start_button.setStyleSheet(u"background-color: rgb(120, 171, 101);\n"
+        self.start_button.setGeometry(QRect(30, 210, 340, 150))
+        self.start_button.setStyleSheet(u"background-color: rgb(107, 182, 84);\n"
                                         "font: 300 24pt \"Helvetica Neue\";\n"
                                         "color: rgb(0, 0, 0);")
         self.stop_button = QPushButton(self.centralwidget)
         self.stop_button.setObjectName(u"stop_button")
-        self.stop_button.setGeometry(QRect(30, 490, 340, 150))
-        self.stop_button.setStyleSheet(u"background-color: rgb(171, 55, 46);\n"
+        self.stop_button.setGeometry(QRect(30, 370, 340, 150))
+        self.stop_button.setStyleSheet(u"background-color: rgb(189, 54, 43);\n"
                                        "color: rgb(0, 0, 0);\n"
                                        "font: 300 24pt \"Helvetica Neue\";")
-        self.instruction_button = QPushButton(self.centralwidget)
-        self.instruction_button.setObjectName(u"instruction_button")
-        self.instruction_button.setGeometry(QRect(30, 149, 340, 150))
-        self.instruction_button.setStyleSheet(u"background-color: rgb(138, 127, 122);\n"
-                                              "color: rgb(0, 0, 0);\n"
-                                              "font: 300 24pt \"Helvetica Neue\";")
         self.label = QLabel(self.centralwidget)
         self.label.setObjectName(u"label")
-        self.label.setGeometry(QRect(80, 30, 240, 50))
+        self.label.setGeometry(QRect(80, 60, 240, 50))
         self.label.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
                                  "color: rgb(255, 255, 255);\n"
                                  "font: 900 36pt \"Futura\";")
+        self.turn_on_off_button = QPushButton(self.centralwidget)
+        self.turn_on_off_button.setObjectName(u"turn_on_off_button")
+        self.turn_on_off_button.setGeometry(QRect(30, 530, 340, 70))
+        self.turn_on_off_button.setStyleSheet(u"background-color: rgb(52, 120, 246);\n"
+                                              "color: rgb(0, 0, 0);\n"
+                                              "font: 300 24pt \"Helvetica Neue\";")
         SlideShifter.setCentralWidget(self.centralwidget)
-        # self.statusbar = QStatusBar(SlideShifter)
-        # self.statusbar.setObjectName(u"statusbar")
-        # SlideShifter.setStatusBar(self.statusbar)
 
-        self.retranslate_ui(SlideShifter)
+        self.retranslateUi(SlideShifter)
 
         QMetaObject.connectSlotsByName(SlideShifter)
 
         self.do_actions()
 
-    def retranslate_ui(self, SlideShifter):
-        SlideShifter.setWindowTitle(QCoreApplication.translate("SlideShifter", u"SlideShifter", None))
-        self.start_button.setText(QCoreApplication.translate("SlideShifter", u"Start", None))
-        self.stop_button.setText(QCoreApplication.translate("SlideShifter", u"Stop", None))
-        self.instruction_button.setText(QCoreApplication.translate("SlideShifter", u"Instruction", None))
+    # setupUi
+
+    def retranslateUi(self, SlideShifter):
+        SlideShifter.setWindowTitle(QCoreApplication.translate("SlideShifter", u"SlideShifterVideo", None))
+        self.start_button.setText(QCoreApplication.translate("SlideShifter", u"\u0421\u0442\u0430\u0440\u0442", None))
+        self.stop_button.setText(QCoreApplication.translate("SlideShifter", u"\u0421\u0442\u043e\u043f", None))
         self.label.setText(QCoreApplication.translate("SlideShifter", u"Slide Shifter", None))
+        self.turn_on_off_button.setText(QCoreApplication.translate("SlideShifter",
+                                                                   u"\u0412\u043a\u043b\u044e\u0447\u0438\u0442\u044c/\u0412\u044b\u043a\u043b\u044e\u0447\u0438\u0442\u044c \u0432\u0438\u0434\u0435\u043e",
+                                                                   None))
+
+    # retranslateUi
 
     def do_actions(self):
-        self.instruction_button.clicked.connect(self.open_instruction)
         self.start_button.clicked.connect(self.start_hand_tracking)
         self.stop_button.clicked.connect(self.stop_hand_tracking)
-
-    def open_instruction(self):
-        print("instruction is working")
+        self.turn_on_off_button.clicked.connect(self.turn_on_off_video)
 
     def start_hand_tracking(self):
         main.is_started = True
-        print("start is working")
 
     def stop_hand_tracking(self):
         main.is_started = False
-        print("stop is working")
+
+    def turn_on_off_video(self):
+        self.cnt += 1
+        if self.cnt % 2 == 0:
+            main.video_on = True
+        else:
+            main.video_on = False
+        main.hand_tracking_function()

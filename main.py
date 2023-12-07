@@ -3,13 +3,12 @@ import hand_tracking as htm
 import pyautogui
 
 is_started = False
+video_on = True
 
 
-def start_hand_tracking():
+def hand_tracking_function():
     # Инициализация видеокамеры
     cap = cv2.VideoCapture(0)
-    cap.set(3, 150)
-    cap.set(4, 200)
 
     # Инициализация детектора руки
     detector = htm.HandDetector(detection_con=0.8)
@@ -20,7 +19,7 @@ def start_hand_tracking():
     # Флаг активации переключения слайдов
     slide_not_switched = True
 
-    while True:
+    while video_on:
         # Захват кадра с камеры
         success, img = cap.read()
         image = cv2.flip(img, 1)
@@ -62,10 +61,16 @@ def start_hand_tracking():
                     slide_not_switched = True
                 # print(slide_not_switched)
 
-        # Отображение окна
-        cv2.imshow("SlideShifterVideo", img)
+        # Отображение окна, только если video_on равно True
+        frame_re = cv2.resize(img, (1024, 576))
+        cv2.imshow("SlideShifterVideo", frame_re)
+
         cv2.waitKey(1)
+
+    # Закрыть видео, если video_on = False
+    if not video_on:
+        cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
-    start_hand_tracking()
+    hand_tracking_function()
