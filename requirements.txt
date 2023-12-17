@@ -13,6 +13,7 @@ future==0.18.3
 gevent==23.9.1
 gevent-websocket==0.10.1
 greenlet==3.0.1
+imageio==2.33.1
 kiwisolver==1.4.5
 macholib==1.16.3
 matplotlib==3.8.2
@@ -21,6 +22,7 @@ MouseInfo==0.1.3
 numpy==1.26.2
 opencv-contrib-python==4.8.1.78
 opencv-python==4.7.0.72
+ordered-set==4.1.0
 packaging==23.2
 Pillow==10.1.0
 protobuf==3.20.3
@@ -49,3 +51,4 @@ sounddevice==0.4.6
 whichcraft==0.6.1
 zope.event==5.0
 zope.interface==6.1
+zstandard==0.22.0
