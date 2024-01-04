@@ -3,23 +3,13 @@ import mediapipe
 import math
 import pyautogui
 import sys
-from enum import Enum
 from PySide6.QtCore import QMetaObject, Qt
-from PySide6.QtWidgets import QLabel, QPushButton, QWidget, QMessageBox, QMainWindow, QApplication, QLabel, QSpacerItem, \
-    QSizePolicy, QVBoxLayout
-
-
-class ButtonColors(Enum):
-    START = "rgb(107, 182, 84)"
-    STOP = "rgb(189, 54, 43)"
-    TURN_ON_OFF = "rgb(52, 120, 246)"
+from PySide6.QtWidgets import QPushButton, QWidget, QMessageBox, QMainWindow, QApplication, QLabel, QVBoxLayout
 
 
 class UiSlideShifter(QMainWindow):
     def __init__(self):
         super().__init__()
-
-        self.cnt = 0
 
     def setupUi(self, SlideShifter):
         if not SlideShifter.objectName():
@@ -46,24 +36,21 @@ class UiSlideShifter(QMainWindow):
 
         # "Start" button
         self.start_button = QPushButton(self.centralwidget)
-        self.set_button_style(self.start_button, ButtonColors.START)
+        self.start_button.setStyleSheet(f"background-color: rgb(107, 182, 84);\n"
+                                        "font: 300 24pt \"Helvetica Neue\";\n"
+                                        "color: rgb(0, 0, 0);")
         self.start_button.setText("Start")
         self.start_button.setMinimumHeight(120)
         vertical_layout.addWidget(self.start_button)
 
         # "Stop" button
         self.stop_button = QPushButton(self.centralwidget)
-        self.set_button_style(self.stop_button, ButtonColors.STOP)
+        self.stop_button.setStyleSheet(f"background-color: rgb(189, 54, 43);\n"
+                                       "font: 300 24pt \"Helvetica Neue\";\n"
+                                       "color: rgb(0, 0, 0);")
         self.stop_button.setText("Stop")
         self.stop_button.setMinimumHeight(120)
         vertical_layout.addWidget(self.stop_button)
-
-        # "Pause" button
-        self.turn_on_off_button = QPushButton(self.centralwidget)
-        self.set_button_style(self.turn_on_off_button, ButtonColors.TURN_ON_OFF)
-        self.turn_on_off_button.setText("Pause")
-        self.turn_on_off_button.setMinimumHeight(120)
-        vertical_layout.addWidget(self.turn_on_off_button)
 
         # Adjust the bottom margin to shift the buttons slightly higher
         vertical_layout.setContentsMargins(20, 0, 20, 100)
@@ -74,25 +61,17 @@ class UiSlideShifter(QMainWindow):
         QMetaObject.connectSlotsByName(SlideShifter)
         self.do_actions()
 
-    def set_button_style(self, button, color):
-        # Set the style for the buttons
-        button.setStyleSheet(f"background-color: {color.value};\n"
-                             "font: 300 24pt \"Helvetica Neue\";\n"
-                             "color: rgb(0, 0, 0);")
-
     def setText(self, SlideShifter):
         # Set text for labels and buttons
         SlideShifter.setWindowTitle("Slide Shifter")
         self.start_button.setText("Start")
         self.stop_button.setText("Stop")
         self.label.setText("Slide Shifter")
-        self.turn_on_off_button.setText("Pause")
 
     def do_actions(self):
         # Connect button clicks to corresponding functions
         self.start_button.clicked.connect(self.start_hand_tracking)
         self.stop_button.clicked.connect(self.stop_hand_tracking)
-        self.turn_on_off_button.clicked.connect(self.pause_video)
 
     def start_hand_tracking(self):
         # Start hand tracking function
@@ -101,13 +80,6 @@ class UiSlideShifter(QMainWindow):
 
     def stop_hand_tracking(self):
         # Stop hand tracking function
-        ht.is_started = False
-        ht.hand_tracking_function()
-
-    def pause_video(self):
-        # Pause/unpause video
-        self.cnt += 1
-        ht.video_on = self.cnt % 2 == 0
         ht.is_started = False
         ht.hand_tracking_function()
 
