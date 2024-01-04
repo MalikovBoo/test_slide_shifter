@@ -4,8 +4,9 @@ import math
 import pyautogui
 import sys
 from enum import Enum
-from PySide6.QtCore import QMetaObject, QRect
-from PySide6.QtWidgets import (QLabel, QPushButton, QWidget, QMessageBox, QMainWindow, QApplication)
+from PySide6.QtCore import QMetaObject, Qt
+from PySide6.QtWidgets import QLabel, QPushButton, QWidget, QMessageBox, QMainWindow, QApplication, QLabel, QSpacerItem, \
+    QSizePolicy, QVBoxLayout
 
 
 class ButtonColors(Enum):
@@ -14,13 +15,11 @@ class ButtonColors(Enum):
     TURN_ON_OFF = "rgb(52, 120, 246)"
 
 
-class Ui_SlideShifter(QMainWindow):
+class UiSlideShifter(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.cnt = 0
-        self.is_started = False
-        self.video_status = True
 
     def setupUi(self, SlideShifter):
         if not SlideShifter.objectName():
@@ -32,27 +31,42 @@ class Ui_SlideShifter(QMainWindow):
         self.centralwidget = QWidget(SlideShifter)
         self.centralwidget.setObjectName(u"centralwidget")
 
-        self.start_button = QPushButton(self.centralwidget)
-        self.start_button.setObjectName(u"start_button")
-        self.start_button.setGeometry(QRect(30, 210, 340, 150))
-        self.set_button_style(self.start_button, ButtonColors.START)
+        # Create a vertical layout to arrange widgets from top to bottom
+        vertical_layout = QVBoxLayout(self.centralwidget)
+        vertical_layout.setObjectName(u"vertical_layout")
 
-        self.stop_button = QPushButton(self.centralwidget)
-        self.stop_button.setObjectName(u"stop_button")
-        self.stop_button.setGeometry(QRect(30, 370, 340, 150))
-        self.set_button_style(self.stop_button, ButtonColors.STOP)
-
-        self.turn_on_off_button = QPushButton(self.centralwidget)
-        self.turn_on_off_button.setObjectName(u"turn_on_off_button")
-        self.turn_on_off_button.setGeometry(QRect(30, 530, 340, 70))
-        self.set_button_style(self.turn_on_off_button, ButtonColors.TURN_ON_OFF)
-
+        # Label
         self.label = QLabel(self.centralwidget)
         self.label.setObjectName(u"label")
-        self.label.setGeometry(QRect(80, 60, 240, 50))
         self.label.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
                                  "color: rgb(255, 255, 255);\n"
                                  "font: 900 28pt \"Futura\";")
+        self.label.setAlignment(Qt.AlignCenter)
+        vertical_layout.addWidget(self.label)
+
+        # "Start" button
+        self.start_button = QPushButton(self.centralwidget)
+        self.set_button_style(self.start_button, ButtonColors.START)
+        self.start_button.setText("Start")
+        self.start_button.setMinimumHeight(120)
+        vertical_layout.addWidget(self.start_button)
+
+        # "Stop" button
+        self.stop_button = QPushButton(self.centralwidget)
+        self.set_button_style(self.stop_button, ButtonColors.STOP)
+        self.stop_button.setText("Stop")
+        self.stop_button.setMinimumHeight(120)
+        vertical_layout.addWidget(self.stop_button)
+
+        # "Pause" button
+        self.turn_on_off_button = QPushButton(self.centralwidget)
+        self.set_button_style(self.turn_on_off_button, ButtonColors.TURN_ON_OFF)
+        self.turn_on_off_button.setText("Pause")
+        self.turn_on_off_button.setMinimumHeight(120)
+        vertical_layout.addWidget(self.turn_on_off_button)
+
+        # Adjust the bottom margin to shift the buttons slightly higher
+        vertical_layout.setContentsMargins(20, 0, 20, 100)
 
         SlideShifter.setCentralWidget(self.centralwidget)
         self.setText(SlideShifter)
@@ -82,21 +96,19 @@ class Ui_SlideShifter(QMainWindow):
 
     def start_hand_tracking(self):
         # Start hand tracking function
-        self.is_started = True
-        ht.is_started = self.is_started
+        ht.is_started = True
         ht.hand_tracking_function()
 
     def stop_hand_tracking(self):
         # Stop hand tracking function
-        self.is_started = False
         ht.is_started = False
         ht.hand_tracking_function()
 
     def pause_video(self):
         # Pause/unpause video
         self.cnt += 1
-        self.video_status = self.cnt % 2 == 0
-        ht.video_on = self.video_status
+        ht.video_on = self.cnt % 2 == 0
+        ht.is_started = False
         ht.hand_tracking_function()
 
     def closeEvent(self, event):
@@ -298,9 +310,8 @@ class HandTracking:
 
 def run_application():
     app = QApplication(sys.argv)
-    window = Ui_SlideShifter()
-    ui = Ui_SlideShifter()
-    ui.setupUi(window)
+    window = UiSlideShifter()
+    window.setupUi(window)
     window.show()
 
     ht.hand_tracking_function()
