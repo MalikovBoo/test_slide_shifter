@@ -3,6 +3,7 @@ import mediapipe
 import math
 import pyautogui
 import sys
+import time
 
 from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect)
 from PySide6.QtGui import QFont
@@ -117,11 +118,13 @@ class UiSlideShifter(QMainWindow):
     def start_hand_tracking(self):
         # Start hand tracking function
         ht.is_started = True
+        print("started")
         ht.hand_tracking_function()
 
     def stop_hand_tracking(self):
         # Stop hand tracking function
         ht.is_started = False
+        print("paused")
         ht.hand_tracking_function()
 
     def closeEvent(self, event):
@@ -283,6 +286,10 @@ class HandTracking:
         cv2.resizeWindow(self.video_window_title, width, height)
         cv2.moveWindow(self.video_window_title, 400, 0)
 
+        start_gesture_time = None
+        gesture_time_threshold = 0.2
+        ready_to_slide = False
+
         while self.video_on:
             # Capture a frame from the camera
             success, img = cap.read()
@@ -303,21 +310,42 @@ class HandTracking:
 
                     if self.slide_not_switched:
                         if length1 + length2 <= 120:
+                            if start_gesture_time is None:
+                                start_gesture_time = time.time()
+
                             # If the initial position is not defined, set it
                             if self.start_thumb_position is None:
                                 self.start_thumb_position = x
 
-                            if x > self.start_thumb_position + 90:  # If the hand moves to the right
-                                print("Left slide")
-                                pyautogui.press("left")
-                                self.start_thumb_position = None
-                                self.slide_not_switched = False
+                            if (time.time() - start_gesture_time > gesture_time_threshold and
+                                    self.start_thumb_position - x <= 50 and
+                                    x - self.start_thumb_position <= 50 and
+                                    length1 + length2 <= 100):
+                                ready_to_slide = True
+                                print("ready to slide")
 
-                            elif x < self.start_thumb_position - 90:  # If the hand moves to the left
-                                print("Right slide")
-                                pyautogui.press("right")
-                                self.start_thumb_position = None
-                                self.slide_not_switched = False
+                            if ready_to_slide:
+                                if x > self.start_thumb_position + 120:  # If the hand moves to the right
+                                    print("Right slide")
+                                    pyautogui.press("right")
+                                    self.start_thumb_position = None
+                                    start_gesture_time = None
+                                    self.slide_not_switched = False
+                                    ready_to_slide = False
+
+                                elif x < self.start_thumb_position - 110:  # If the hand moves to the left
+                                    print("Left slide")
+                                    pyautogui.press("left")
+                                    self.start_thumb_position = None
+                                    start_gesture_time = None
+                                    self.slide_not_switched = False
+                                    ready_to_slide = False
+
+                        elif start_gesture_time is not None:
+                            start_gesture_time = None
+                            self.start_thumb_position = None
+                            ready_to_slide = False
+                            print("failed slide")
 
                     elif length1 + length2 > 120:
                         self.slide_not_switched = True
