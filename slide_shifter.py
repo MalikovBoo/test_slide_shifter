@@ -287,7 +287,7 @@ class HandTracking:
         cv2.moveWindow(self.video_window_title, 400, 0)
 
         start_gesture_time = None
-        gesture_time_threshold = 0.2
+        gesture_time_threshold = 0.5
         ready_to_slide = False
 
         while self.video_on:
