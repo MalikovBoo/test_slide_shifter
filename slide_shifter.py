@@ -1,3 +1,5 @@
+import pprint
+
 import cv2
 import mediapipe
 import math
@@ -157,7 +159,7 @@ class HandDetector:
         :param detection_con: Detection confidence threshold for hand detection (default is 0.5).
         :param track_con: Tracking confidence threshold for hand tracking (default is 0.5).
         """
-        self.lm_list = []  # List to store coordinates of hand landmarks
+        self.lm_list = []  # List to store coordinates of hands landmarks
         self.results = None
         self.mode = mode
         self.max_hands = max_hands
@@ -190,39 +192,32 @@ class HandDetector:
                     self.mp_draw.draw_landmarks(image, hand_lms, self.mp_hands.HAND_CONNECTIONS)
         return image
 
-    def find_position(self, image, hand_no=0, draw=True):
-        """
-        Finds the position of hand landmarks and the bounding rectangle around the hand.
+    def find_position(self, image, draw=True):
 
-        :param image: Source image.
-        :param hand_no: Index of the hand in case of multiple hands (default is 0).
-        :param draw: Flag for drawing the results (default is True).
-        :return: List of coordinates of hand landmarks and coordinates of the bounding rectangle.
-        """
-        x_list = []
-        y_list = []
-        bbox = []
         self.lm_list = []
 
         if self.results.multi_hand_landmarks:
-            my_hand = self.results.multi_hand_landmarks[hand_no]
-            for id, lm in enumerate(my_hand.landmark):
-                h, w, c = image.shape
-                cx, cy = int(lm.x * w), int(lm.y * h)
-                x_list.append(cx)
-                y_list.append(cy)
-                self.lm_list.append([id, cx, cy])
+            for hand in self.results.multi_hand_landmarks:
+                x_list = []
+                y_list = []
+                hand_lm = []
+                for id, lm in enumerate(hand.landmark):
+                    h, w, c = image.shape
+                    cx, cy = int(lm.x * w), int(lm.y * h)
+                    x_list.append(cx)
+                    y_list.append(cy)
+                    hand_lm.append([id, cx, cy])
+                    if draw:
+                        cv2.circle(image, (cx, cy), 5, (255, 0, 255), cv2.FILLED)
+                xmin, xmax = min(x_list), max(x_list)
+                ymin, ymax = min(y_list), max(y_list)
+                bbox = [xmin, ymin, xmax, ymax]
+                self.lm_list.append(hand_lm)
                 if draw:
-                    cv2.circle(image, (cx, cy), 5, (255, 0, 255), cv2.FILLED)
-            xmin, xmax = min(x_list), max(x_list)
-            ymin, ymax = min(y_list), max(y_list)
-            bbox = xmin, ymin, xmax, ymax
+                    cv2.rectangle(image, (bbox[0] - 20, bbox[1] - 20), (bbox[2] + 20, bbox[3] + 20), (0, 255, 0), 2)
+        return self.lm_list
 
-            if draw:
-                cv2.rectangle(image, (bbox[0] - 20, bbox[1] - 20), (bbox[2] + 20, bbox[3] + 20), (0, 255, 0), 2)
-        return self.lm_list, bbox
-
-    def find_distance(self, index1, index2, image, draw=True):
+    def find_distance(self, hand, index1, index2, image, draw=True):
         """
         Finds the distance between two points on the image and visualizes the result if the draw flag is set to True.
         :param index1: Index of the first point in the list of hand landmarks.
@@ -231,8 +226,9 @@ class HandDetector:
         :param draw: Flag for drawing the results (default is True).
         :return: Distance between the points, image with annotated elements, and coordinates of the points and their center.
         """
-        x1, y1 = self.lm_list[index1][1], self.lm_list[index1][2]
-        x2, y2 = self.lm_list[index2][1], self.lm_list[index2][2]
+        lm_list = self.lm_list[hand]
+        x1, y1 = lm_list[index1][1], lm_list[index1][2]
+        x2, y2 = lm_list[index2][1], lm_list[index2][2]
         cx = (x1 + x2) // 2
         cy = (y1 + y2) // 2
 
@@ -243,7 +239,7 @@ class HandDetector:
             cv2.circle(image, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
 
         length = math.hypot(x2 - x1, y2 - y1)
-        return length, image, [x1, y1, x2, y2, cx, cy]
+        return length
 
 
 class HandTracking:
@@ -261,7 +257,7 @@ class HandTracking:
             detector (HandDetector): Instance of the HandDetector class for hand tracking.
         """
         self.video_window_title = "Slide Shifter Video"
-        self.start_thumb_position = None
+        self.start_thumb_position = [None, None]  # left and right hands
         self.slide_not_switched = True
         self.video_on = True
         self.is_started = False
@@ -286,9 +282,9 @@ class HandTracking:
         cv2.resizeWindow(self.video_window_title, width, height)
         cv2.moveWindow(self.video_window_title, 400, 0)
 
-        start_gesture_time = None
+        start_gesture_time = [None, None]
         gesture_time_threshold = 0.5
-        ready_to_slide = False
+        ready_to_slide = [False, False]
 
         while self.video_on:
             # Capture a frame from the camera
@@ -297,54 +293,65 @@ class HandTracking:
             img = self.detector.find_hands(image)
 
             if self.is_started:
-                # Detect hand landmarks in the frame
-                lm_list, _ = self.detector.find_position(img)
+                # Detect hands landmarks in the frame
+                lm_list = self.detector.find_position(img)
 
-                if len(lm_list) != 0:
-                    # Find the x-coordinate of the thumb
-                    x = lm_list[4][1]
+                # Find the x-coordinate of the thumbs
+                try:
+                    first_hand = lm_list[0]
+                    x1 = first_hand[4][1]
+                except IndexError:
+                    x1 = None
+                try:
+                    second_hand = lm_list[1]
+                    x2 = second_hand[4][1]
+                except IndexError:
+                    x2 = None
 
+                for i, thumb in enumerate([x1, x2]):
+                    if thumb is None:
+                        continue
                     # Check the distance between the index and middle fingers
-                    length1, _, _ = self.detector.find_distance(4, 8, img, draw=False)
-                    length2, _, _ = self.detector.find_distance(4, 12, img, draw=False)
+                    length1 = self.detector.find_distance(i, 4, 8, img, draw=False)
+                    length2 = self.detector.find_distance(i, 4, 12, img, draw=False)
 
                     if self.slide_not_switched:
                         if length1 + length2 <= 120:
-                            if start_gesture_time is None:
-                                start_gesture_time = time.time()
+                            if start_gesture_time[i] is None:
+                                start_gesture_time[i] = time.time()
 
                             # If the initial position is not defined, set it
-                            if self.start_thumb_position is None:
-                                self.start_thumb_position = x
+                            if self.start_thumb_position[i] is None:
+                                self.start_thumb_position[i] = thumb
 
-                            if (time.time() - start_gesture_time > gesture_time_threshold and
-                                    self.start_thumb_position - x <= 50 and
-                                    x - self.start_thumb_position <= 50 and
+                            if (time.time() - start_gesture_time[i] > gesture_time_threshold and
+                                    self.start_thumb_position[i] - thumb <= 50 and
+                                    thumb - self.start_thumb_position[i] <= 50 and
                                     length1 + length2 <= 100):
-                                ready_to_slide = True
+                                ready_to_slide[i] = True
                                 print("ready to slide")
 
-                            if ready_to_slide:
-                                if x > self.start_thumb_position + 120:  # If the hand moves to the right
+                            if ready_to_slide[i]:
+                                if thumb > self.start_thumb_position[i] + 120:  # If the hand moves to the right
                                     print("Right slide")
                                     pyautogui.press("right")
-                                    self.start_thumb_position = None
-                                    start_gesture_time = None
+                                    self.start_thumb_position[i] = None
+                                    start_gesture_time[i] = None
                                     self.slide_not_switched = False
-                                    ready_to_slide = False
+                                    ready_to_slide[i] = False
 
-                                elif x < self.start_thumb_position - 110:  # If the hand moves to the left
+                                elif thumb < self.start_thumb_position[i] - 110:  # If the hand moves to the left
                                     print("Left slide")
                                     pyautogui.press("left")
-                                    self.start_thumb_position = None
-                                    start_gesture_time = None
+                                    self.start_thumb_position[i] = None
+                                    start_gesture_time[i] = None
                                     self.slide_not_switched = False
-                                    ready_to_slide = False
+                                    ready_to_slide[i] = False
 
-                        elif start_gesture_time is not None:
-                            start_gesture_time = None
-                            self.start_thumb_position = None
-                            ready_to_slide = False
+                        elif start_gesture_time[i] is not None:
+                            start_gesture_time[i] = None
+                            self.start_thumb_position[i] = None
+                            ready_to_slide[i] = False
                             print("failed slide")
 
                     elif length1 + length2 > 120:
