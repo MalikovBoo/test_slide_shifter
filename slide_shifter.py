@@ -1,5 +1,3 @@
-import pprint
-
 import cv2
 import mediapipe
 import math
@@ -134,7 +132,7 @@ class UiSlideShifter(QMainWindow):
         reply = self.show_quit_confirmation_dialog()
         if reply == QMessageBox.Yes:
             event.accept()
-            ht.video_on = False
+            ht.is_video_on = False
             ht.hand_tracking_function()
             sys.exit(0)
         else:
@@ -150,50 +148,25 @@ class UiSlideShifter(QMainWindow):
 
 class HandDetector:
     def __init__(self, mode=False, max_hands=2, model_complexity=1, detection_con=0.5, track_con=0.5):
-        """
-        Initializes an instance of the HandDetector class with specified parameters.
-
-        :param mode: Hand detector mode (default is False).
-        :param max_hands: Maximum number of hands to track (default is 2).
-        :param model_complexity: Model complexity of the hand detector (default is 1).
-        :param detection_con: Detection confidence threshold for hand detection (default is 0.5).
-        :param track_con: Tracking confidence threshold for hand tracking (default is 0.5).
-        """
         self.lm_list = []  # List to store coordinates of hands landmarks
-        self.results = None
-        self.mode = mode
-        self.max_hands = max_hands
-        self.model_complexity = model_complexity
-        self.detection_con = detection_con
-        self.track_con = track_con
-
+        self.results = None  # Collection of tracked hands; include:(multi_hand_landmarks, multi_handedness)
         self.mp_hands = mediapipe.solutions.hands
-        self.hands = self.mp_hands.Hands(self.mode, self.max_hands, self.model_complexity, self.detection_con,
-                                         self.track_con)
-        self.mp_draw = mediapipe.solutions.drawing_utils
-        self.tip_ids = [4, 8, 12, 16, 20]
+        self.hands = self.mp_hands.Hands(mode, max_hands, model_complexity, detection_con, track_con)
 
     def find_hands(self, image, draw=True):
-        """
-        Finds and visualizes hands on the image.
-
-        :param image: Source image.
-        :param draw: Flag for drawing the results (default is True).
-        :return: Image with annotated hands.
-        """
         if image is None:
             return None
+
+        mp_draw = mediapipe.solutions.drawing_utils
         img_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         self.results = self.hands.process(img_rgb)
 
-        if self.results.multi_hand_landmarks:
+        if self.results.multi_hand_landmarks and draw:
             for hand_lms in self.results.multi_hand_landmarks:
-                if draw:
-                    self.mp_draw.draw_landmarks(image, hand_lms, self.mp_hands.HAND_CONNECTIONS)
+                mp_draw.draw_landmarks(image, hand_lms, self.mp_hands.HAND_CONNECTIONS)
         return image
 
     def find_position(self, image, draw=True):
-
         self.lm_list = []
 
         if self.results.multi_hand_landmarks:
@@ -209,23 +182,13 @@ class HandDetector:
                     hand_lm.append([id, cx, cy])
                     if draw:
                         cv2.circle(image, (cx, cy), 5, (255, 0, 255), cv2.FILLED)
-                xmin, xmax = min(x_list), max(x_list)
-                ymin, ymax = min(y_list), max(y_list)
-                bbox = [xmin, ymin, xmax, ymax]
+                frame = [min(x_list), min(y_list), max(x_list), max(y_list)]
                 self.lm_list.append(hand_lm)
                 if draw:
-                    cv2.rectangle(image, (bbox[0] - 20, bbox[1] - 20), (bbox[2] + 20, bbox[3] + 20), (0, 255, 0), 2)
+                    cv2.rectangle(image, (frame[0] - 20, frame[1] - 20), (frame[2] + 20, frame[3] + 20), (0, 255, 0), 2)
         return self.lm_list
 
-    def find_distance(self, hand, index1, index2, image, draw=True):
-        """
-        Finds the distance between two points on the image and visualizes the result if the draw flag is set to True.
-        :param index1: Index of the first point in the list of hand landmarks.
-        :param index2: Index of the second point in the list of hand landmarks.
-        :param image: Source image.
-        :param draw: Flag for drawing the results (default is True).
-        :return: Distance between the points, image with annotated elements, and coordinates of the points and their center.
-        """
+    def find_distance(self, hand: int, index1: int, index2: int, image, draw=True):
         lm_list = self.lm_list[hand]
         x1, y1 = lm_list[index1][1], lm_list[index1][2]
         x2, y2 = lm_list[index2][1], lm_list[index2][2]
@@ -244,52 +207,57 @@ class HandDetector:
 
 class HandTracking:
     def __init__(self):
-        """
-        Initializes an instance of the HandTracking class.
-
-        Attributes:
-            video_window_title (str): Title of the video window.
-            start_thumb_position (int or None): Initial position of the thumb.
-            slide_not_switched (bool): Flag indicating whether the slide is not switched.
-            video_on (bool): Flag indicating whether the video is on.
-            is_started (bool): Flag indicating whether hand tracking is started.
-            cap (cv2.VideoCapture): Video capture object.
-            detector (HandDetector): Instance of the HandDetector class for hand tracking.
-        """
         self.video_window_title = "Slide Shifter Video"
-        self.start_thumb_position = [None, None]  # left and right hands
-        self.slide_not_switched = True
-        self.video_on = True
+        self.is_video_on = True
         self.is_started = False
         self.cameras = [0, ]
         self.camera_index = 0
         self.detector = HandDetector(detection_con=0.8)
 
-    def hand_tracking_function(self):
-        """
-        Performs hand tracking using the initialized video capture and hand detector.
+        self.is_slide_switched = False
+        self.start_thumb_position = [None, None]  # Start x-thumb position of left and right hands
+        self.start_gesture_time = [None, None]  # Start time of holding the left and right hand gesture
+        self.gesture_time_threshold = 0.5  # Threshold for holding the gesture in one position (seconds)
+        self.ready_to_slide = [False, False]  # Is the right and left hand gesture ready to flip the slide
 
-        It initializes the video window, captures frames from the camera, detects hands, and controls the slide based on hand movements.
-        """
+    def find_x_coordinate_of_thumb(self, landmarks: list):
+        try:
+            first_hand = landmarks[0]
+            x1 = first_hand[4][1]
+        except IndexError:
+            x1 = None
+        try:
+            second_hand = landmarks[1]
+            x2 = second_hand[4][1]
+        except IndexError:
+            x2 = None
+
+        return x1, x2
+
+    def make_slide_shift(self, action: str, idx: int):
+        if action != "fail":
+            pyautogui.press(action)
+            self.is_slide_switched = True
+
+        self.start_gesture_time[idx] = None
+        self.start_thumb_position[idx] = None
+        self.ready_to_slide[idx] = False
+        print(f"{action} slide")
+
+    def hand_tracking_function(self):
         # Initialize the video window
         cap = cv2.VideoCapture(self.cameras[self.camera_index])
-
-        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) // 2
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) // 2
-        __, _ = cap.read()
-        cv2.imshow(self.video_window_title, _)
+        width, height = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) // 2, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) // 2
+        _, image_template = cap.read()
+        cv2.imshow(self.video_window_title, image_template)
         cv2.namedWindow(self.video_window_title, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(self.video_window_title, width, height)
         cv2.moveWindow(self.video_window_title, 400, 0)
 
-        start_gesture_time = [None, None]
-        gesture_time_threshold = 0.5
-        ready_to_slide = [False, False]
-
-        while self.video_on:
+        while self.is_video_on:
             # Capture a frame from the camera
             success, img = cap.read()
-            image = cv2.flip(img, 1)
+            image = cv2.flip(img, 1)  # Mirror the image
             img = self.detector.find_hands(image)
 
             if self.is_started:
@@ -297,70 +265,49 @@ class HandTracking:
                 lm_list = self.detector.find_position(img)
 
                 # Find the x-coordinate of the thumbs
-                try:
-                    first_hand = lm_list[0]
-                    x1 = first_hand[4][1]
-                except IndexError:
-                    x1 = None
-                try:
-                    second_hand = lm_list[1]
-                    x2 = second_hand[4][1]
-                except IndexError:
-                    x2 = None
+                x1, x2 = self.find_x_coordinate_of_thumb(lm_list)
 
                 for i, thumb in enumerate([x1, x2]):
                     if thumb is None:
                         continue
+
                     # Check the distance between the index and middle fingers
                     length1 = self.detector.find_distance(i, 4, 8, img, draw=False)
                     length2 = self.detector.find_distance(i, 4, 12, img, draw=False)
 
-                    if self.slide_not_switched:
+                    if not self.is_slide_switched:
                         if length1 + length2 <= 120:
-                            if start_gesture_time[i] is None:
-                                start_gesture_time[i] = time.time()
+                            if self.start_gesture_time[i] is None:
+                                self.start_gesture_time[i] = time.time()
 
                             # If the initial position is not defined, set it
                             if self.start_thumb_position[i] is None:
                                 self.start_thumb_position[i] = thumb
 
-                            if (time.time() - start_gesture_time[i] > gesture_time_threshold and
+                            if (time.time() - self.start_gesture_time[i] > self.gesture_time_threshold and
                                     self.start_thumb_position[i] - thumb <= 50 and
                                     thumb - self.start_thumb_position[i] <= 50 and
                                     length1 + length2 <= 100):
-                                ready_to_slide[i] = True
+                                self.ready_to_slide[i] = True
                                 print("ready to slide")
 
-                            if ready_to_slide[i]:
+                            if self.ready_to_slide[i]:
                                 if thumb > self.start_thumb_position[i] + 120:  # If the hand moves to the right
-                                    print("Right slide")
-                                    pyautogui.press("right")
-                                    self.start_thumb_position[i] = None
-                                    start_gesture_time[i] = None
-                                    self.slide_not_switched = False
-                                    ready_to_slide[i] = False
+                                    self.make_slide_shift(action="right", idx=i)
 
                                 elif thumb < self.start_thumb_position[i] - 110:  # If the hand moves to the left
-                                    print("Left slide")
-                                    pyautogui.press("left")
-                                    self.start_thumb_position[i] = None
-                                    start_gesture_time[i] = None
-                                    self.slide_not_switched = False
-                                    ready_to_slide[i] = False
+                                    self.make_slide_shift(action="left", idx=i)
 
-                        elif start_gesture_time[i] is not None:
-                            start_gesture_time[i] = None
-                            self.start_thumb_position[i] = None
-                            ready_to_slide[i] = False
-                            print("failed slide")
+                        elif self.start_gesture_time[i] is not None:
+                            self.make_slide_shift(action="fail", idx=i)
 
                     elif length1 + length2 > 120:
-                        self.slide_not_switched = True
+                        self.is_slide_switched = False
 
             # Display the window
             cv2.imshow(self.video_window_title, img)
-
             cv2.waitKey(1)
+
         else:
             cap.release()
             cv2.destroyAllWindows()
