@@ -303,10 +303,13 @@ class HandTracking:
         self.is_slide_switched = [False, False]
         self.start_thumb_position = [None, None]  # Start x-thumb position of left and right hands
         self.start_gesture_time = [None, None]  # Start time of holding the left and right hand gesture
-        self.gesture_time_threshold = 0.5  # Threshold for holding the gesture in one position (seconds)
+        self.gesture_time_threshold = 0.3  # Threshold for holding the gesture in one position (seconds)
         self.ready_to_slide = [False, False]  # Is the right and left hand gesture ready to flip the slide
         self.marker_to_print = [0, 0]  # A marker that helps you display the readiness to flip the slide exactly 1 time
-        self.slides_to_switch = 0
+        self.slides_to_switch = [0, 0]
+        self.start_count_time = [None, None]
+        self.count_time_threshold = 2
+        self.count_or_not = [True, True]
 
     def find_x_coordinate_of_thumb(self, landmarks: list):
         try:
@@ -323,23 +326,24 @@ class HandTracking:
         return x1, x2
 
     def make_slide_shift(self, action: str, idx: int, amount_of_slides: int):
-        if action != "fail":
-            for i in range(amount_of_slides):
-                pyautogui.press(action)
-            self.is_slide_switched[idx] = True
-            if action == "right":
-                action = "вправо"
-            else:
-                action = "влево"
-            window.append_to_log(
-                f"<font color='#6e9664'>{amount_of_slides} слайд(-а) {action} с помощью {idx + 1}-ой руки</font><br>")
+        for i in range(amount_of_slides):
+            pyautogui.press(action)
+        self.is_slide_switched[idx] = True
+
+        if action == "right":
+            side_to_switch = "вправо"
         else:
-            window.append_to_log("<font color='#aa3232'>Неудачная попытка переключить слайд</font><br>")
+            side_to_switch = "влево"
+        window.append_to_log(
+            f"<font color='#6e9664'>{amount_of_slides} слайд(-а) {side_to_switch} с помощью {idx + 1}-ой руки</font><br>")
 
         self.start_gesture_time[idx] = None
+        self.start_count_time[idx] = None
         self.start_thumb_position[idx] = None
         self.ready_to_slide[idx] = False
         self.marker_to_print[idx] = 0
+        self.slides_to_switch[idx] = 0
+        self.count_or_not[idx] = True
 
     def hand_tracking_function(self):
         # Initialize the video window
@@ -371,27 +375,27 @@ class HandTracking:
                     # Check the distance between the index, middle and ring fingers
                     length1 = self.detector.find_distance(i, 4, 8, img, draw=False)
                     length2 = self.detector.find_distance(i, 4, 12, img, draw=False)
-                    length3 = self.detector.find_distance(i, 4, 16, img, draw=False)
 
                     if self.is_slide_switched.count(True) == 0:
-                        if length1 + length2 + length3 <= 150:
-                            self.slides_to_switch = 2
-                        elif length1 + length2 <= 100:
-                            self.slides_to_switch = 1
-                        else:
-                            self.slides_to_switch = 0
-
-                        if self.slides_to_switch > 0:
-                            if self.start_gesture_time[i] is None:
-                                self.start_gesture_time[i] = time.time()
+                        if length1 + length2 <= 100:
+                            if self.start_count_time[i] is None:
+                                self.start_count_time[i] = time.time()
 
                             # If the initial position is not defined, set it
                             if self.start_thumb_position[i] is None:
                                 self.start_thumb_position[i] = thumb
 
+                            if self.start_gesture_time[i] is None:
+                                self.start_gesture_time[i] = time.time()
+
+                            if (time.time() - self.start_count_time[i] < self.count_time_threshold and
+                                    self.count_or_not[i]):
+                                self.slides_to_switch[i] += 1
+                            self.count_or_not[i] = False
+
                             if (time.time() - self.start_gesture_time[i] > self.gesture_time_threshold and
-                                    self.start_thumb_position[i] - thumb <= 50 and
-                                    thumb - self.start_thumb_position[i] <= 50 and
+                                    self.start_thumb_position[i] - thumb <= 70 and
+                                    thumb - self.start_thumb_position[i] <= 70 and
                                     length1 + length2 <= 100):
                                 self.ready_to_slide[i] = True
 
@@ -404,15 +408,33 @@ class HandTracking:
                                         f"<font color='#d3d5d5'>Готов переключить слайд {i + 1}-ой рукой</font><br>")
 
                                 if thumb > self.start_thumb_position[i] + 120:  # If the hand moves to the right
-                                    self.make_slide_shift(action="right", idx=i, amount_of_slides=self.slides_to_switch)
+                                    self.make_slide_shift(action="right", idx=i,
+                                                          amount_of_slides=self.slides_to_switch[i])
 
                                 elif thumb < self.start_thumb_position[i] - 110:  # If the hand moves to the left
-                                    self.make_slide_shift(action="left", idx=i, amount_of_slides=self.slides_to_switch)
+                                    self.make_slide_shift(action="left", idx=i,
+                                                          amount_of_slides=self.slides_to_switch[i])
 
-                        elif self.start_gesture_time[i] is not None:
-                            self.make_slide_shift(action="fail", idx=i, amount_of_slides=self.slides_to_switch)
+                        elif length1 + length2 > 100:
+                            if self.start_count_time[i] is not None:
+                                if time.time() - self.start_count_time[i] > self.count_time_threshold + 1:
+                                    self.slides_to_switch[i] = 0
+                                    self.start_count_time[i] = None
+                                    self.start_thumb_position[i] = None
 
-                    elif length1 + length2 > 120:
+                            if self.start_thumb_position[i] is not None:
+                                if (self.start_thumb_position[i] - thumb > 70 or
+                                        thumb - self.start_thumb_position[i] > 70):
+                                    self.slides_to_switch[i] = 0
+                                    self.start_count_time[i] = None
+                                    self.start_thumb_position[i] = None
+
+                            self.start_gesture_time[i] = None
+                            self.count_or_not[i] = True
+                            self.marker_to_print[i] = 0
+                            self.ready_to_slide[i] = False
+
+                    elif length1 + length2 > 100:
                         self.is_slide_switched[i] = False
 
             # Display the window
