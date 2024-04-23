@@ -185,19 +185,16 @@ class UiSlideShifter(QMainWindow):
             ht.hand_to_track = "Right"
         elif index == 2:
             ht.hand_to_track = "Left"
-        ht.hand_tracking_function()
 
     def start_hand_tracking(self):
         # Start hand tracking function
         ht.is_started = True
         self.append_to_log("<font color='#3c6eb4'>Включено отслеживание рук</font><br>")
-        ht.hand_tracking_function()
 
     def stop_hand_tracking(self):
         # Stop hand tracking function
         ht.is_started = False
         self.append_to_log("<font color='#3c6eb4'>Приостановлено отслеживание рук</font><br>")
-        ht.hand_tracking_function()
 
     def append_to_log(self, text):
         # Add text to the end of the log field
@@ -210,7 +207,6 @@ class UiSlideShifter(QMainWindow):
         if reply == QMessageBox.Yes:
             event.accept()
             ht.is_video_on = False
-            ht.hand_tracking_function()
             sys.exit(0)
         else:
             event.ignore()
@@ -311,6 +307,10 @@ class HandTracking:
         self.count_time_threshold = 2
         self.count_or_not = [True, True]
 
+        self.length_in_normal_position = None
+        self.length_in_gesture = None
+        self.start_time_to_setup_positions = None
+
     def find_x_coordinate_of_thumb(self, landmarks: list):
         try:
             first_hand = landmarks[0]
@@ -345,6 +345,71 @@ class HandTracking:
         self.slides_to_switch[idx] = 0
         self.count_or_not[idx] = True
 
+    def setup_units(self, img, average_length, cnt, position):
+        lm_list = self.detector.find_position(img, exact_hand="Right")
+        x = self.find_x_coordinate_of_thumb(lm_list)[0]
+        if x is not None:
+            if self.start_time_to_setup_positions is None:
+                self.start_time_to_setup_positions = time.time()
+
+            length1 = self.detector.find_distance(0, 4, 8, img, draw=False)
+            length2 = self.detector.find_distance(0, 4, 12, img, draw=False)
+            length = length1 + length2
+
+            is_continue = True
+            if average_length != 0:
+                if length > average_length * 1.1 or length < average_length - (average_length * 1.1 - average_length):
+                    window.append_to_log(
+                        f"<font color='#d3d5d5'>Не двигайте руку! Попробуйте еще раз.</font><br>")
+                    self.start_time_to_setup_positions = None
+                    average_length = 0
+                    cnt = 0
+                    is_continue = False
+                else:
+                    average_length += length
+                    average_length /= 2
+            else:
+                average_length = length
+
+            if is_continue:
+                dif_times = time.time() - self.start_time_to_setup_positions
+                if dif_times >= 4:
+                    dist = 0
+                    if position == "normal":
+                        self.length_in_normal_position = average_length
+                        dist = self.length_in_normal_position
+                    elif position == "gesture":
+                        self.length_in_gesture = average_length
+                        dist = self.length_in_gesture
+                    self.start_time_to_setup_positions = None
+
+                    window.append_to_log(
+                        f"<font color='#d3d5d5'>Данные настроены. "
+                        f"Расстояние между пальцами: {round(dist)}</font><br>")
+                    window.append_to_log("")
+
+                    average_length = 0
+                    cnt = 0
+                elif dif_times >= 3:
+                    if cnt == 2:
+                        cnt += 1
+                        window.append_to_log(f"<font color='#d3d5d5'>1...</font><br>")
+                elif dif_times >= 2:
+                    if cnt == 1:
+                        cnt += 1
+                        window.append_to_log(f"<font color='#d3d5d5'>2...</font><br>")
+                elif dif_times >= 1:
+                    if cnt == 0:
+                        cnt += 1
+                        window.append_to_log(f"<font color='#d3d5d5'>3...</font><br>")
+        else:
+            if self.start_time_to_setup_positions is not None:
+                window.append_to_log(
+                    f"<font color='#d3d5d5'>Не убирайте руку от камеры! Попробуйте еще раз.</font><br>")
+                self.start_time_to_setup_positions = None
+                cnt = 0
+        return average_length, cnt
+
     def hand_tracking_function(self):
         # Initialize the video window
         cap = cv2.VideoCapture(self.cameras[self.camera_index])
@@ -355,13 +420,35 @@ class HandTracking:
         cv2.resizeWindow(self.video_window_title, width, height)
         cv2.moveWindow(self.video_window_title, 400, 0)
 
+        self.length_in_normal_position = None
+        self.length_in_gesture = None
+        average_length = 0
+        count_to_print = 0
+
+        window.append_to_log(
+            f"<font color='#d3d5d5'>Необходимо выполнить настройку. Следуйте инструкции.</font><br>")
+        window.append_to_log(
+            f"<font color='#d3d5d5'>Поместите руку в кадр на расстоянии, "
+            f"на котором будет использоваться программа.</font><br>")
+        window.append_to_log(
+            f"<font color='#d3d5d5'>Сначала удерживайте руку раскрытой ладонью в камеру</font><br>")
+        window.append_to_log(
+            f"<font color='#d3d5d5'>После удерживайте руку в положении жеста</font><br>")
+        window.append_to_log("")
+
         while self.is_video_on:
             # Capture a frame from the camera
             success, img = cap.read()
             image = cv2.flip(img, 1)  # Mirror the image
             img = self.detector.find_hands(image)
 
-            if self.is_started:
+            if self.is_started and self.length_in_normal_position is None:
+                average_length, count_to_print = self.setup_units(img, average_length, count_to_print, position="normal")
+
+            elif self.is_started and self.length_in_gesture is None:
+                average_length, count_to_print = self.setup_units(img, average_length, count_to_print, position="gesture")
+
+            elif self.is_started:
                 # Detect hands landmarks in the frame
                 lm_list = self.detector.find_position(img, exact_hand=self.hand_to_track)
 
@@ -377,7 +464,7 @@ class HandTracking:
                     length2 = self.detector.find_distance(i, 4, 12, img, draw=False)
 
                     if self.is_slide_switched.count(True) == 0:
-                        if length1 + length2 <= 100:
+                        if length1 + length2 <= self.length_in_gesture * 1.7:
                             if self.start_count_time[i] is None:
                                 self.start_count_time[i] = time.time()
 
@@ -394,9 +481,9 @@ class HandTracking:
                             self.count_or_not[i] = False
 
                             if (time.time() - self.start_gesture_time[i] > self.gesture_time_threshold and
-                                    self.start_thumb_position[i] - thumb <= 70 and
-                                    thumb - self.start_thumb_position[i] <= 70 and
-                                    length1 + length2 <= 100):
+                                    self.start_thumb_position[i] - thumb <= self.length_in_gesture and
+                                    thumb - self.start_thumb_position[i] <= self.length_in_gesture and
+                                    length1 + length2 <= self.length_in_gesture * 1.7):
                                 self.ready_to_slide[i] = True
 
                                 if self.marker_to_print[i] < 2:
@@ -405,17 +492,17 @@ class HandTracking:
                             if self.ready_to_slide[i]:
                                 if self.marker_to_print[i] == 1:
                                     window.append_to_log(
-                                        f"<font color='#d3d5d5'>Готов переключить слайд {i + 1}-ой рукой</font><br>")
+                                        f"<font color='#d3d5d5'>Готов переключить {self.slides_to_switch[i]} слайд(-а) {i + 1}-ой рукой</font><br>")
 
-                                if thumb > self.start_thumb_position[i] + 120:  # If the hand moves to the right
+                                if thumb > self.start_thumb_position[i] + self.length_in_normal_position:  # If the hand moves to the right
                                     self.make_slide_shift(action="right", idx=i,
                                                           amount_of_slides=self.slides_to_switch[i])
 
-                                elif thumb < self.start_thumb_position[i] - 110:  # If the hand moves to the left
+                                elif thumb < self.start_thumb_position[i] - self.length_in_normal_position:  # If the hand moves to the left
                                     self.make_slide_shift(action="left", idx=i,
                                                           amount_of_slides=self.slides_to_switch[i])
 
-                        elif length1 + length2 > 100:
+                        elif length1 + length2 > self.length_in_gesture * 1.7:
                             if self.start_count_time[i] is not None:
                                 if time.time() - self.start_count_time[i] > self.count_time_threshold + 1:
                                     self.slides_to_switch[i] = 0
@@ -423,8 +510,8 @@ class HandTracking:
                                     self.start_thumb_position[i] = None
 
                             if self.start_thumb_position[i] is not None:
-                                if (self.start_thumb_position[i] - thumb > 70 or
-                                        thumb - self.start_thumb_position[i] > 70):
+                                if (self.start_thumb_position[i] - thumb > self.length_in_gesture or
+                                        thumb - self.start_thumb_position[i] > self.length_in_gesture):
                                     self.slides_to_switch[i] = 0
                                     self.start_count_time[i] = None
                                     self.start_thumb_position[i] = None
@@ -434,7 +521,7 @@ class HandTracking:
                             self.marker_to_print[i] = 0
                             self.ready_to_slide[i] = False
 
-                    elif length1 + length2 > 100:
+                    elif length1 + length2 > self.length_in_gesture * 1.7:
                         self.is_slide_switched[i] = False
 
             # Display the window
