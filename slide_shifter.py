@@ -16,29 +16,43 @@ class UiSlideShifter(QMainWindow):
         super().__init__()
 
     def setupUi(self, SlideShifter):
+        """Show User Interface"""
+
         if not SlideShifter.objectName():
             SlideShifter.setObjectName(u"SlideShifter")
+
         SlideShifter.move(0, 0)
         SlideShifter.resize(400, 720)
-        SlideShifter.setStyleSheet(
-            u"background-color: qradialgradient(spread:pad, cx:0.5, cy:0.497014, radius:0.485181, fx:0.496641, fy:0.443, stop:0 rgba(38, 90, 222, 255), stop:0.16 rgba(150, 161, 228, 255), stop:0.225 rgba(140, 163, 244, 255), stop:0.285 rgba(202, 189, 247, 255), stop:0.345 rgba(153, 172, 255, 255), stop:0.415 rgba(208, 187, 231, 255), stop:0.52 rgba(123, 118, 228, 255), stop:0.57 rgba(98, 128, 208, 255), stop:0.635 rgba(121, 139, 200, 255), stop:0.695 rgba(137, 146, 201, 255), stop:0.75 rgba(129, 151, 216, 255), stop:0.815 rgba(154, 164, 208, 255), stop:0.88 rgba(137, 148, 205, 255), stop:0.935 rgba(216, 217, 224, 255), stop:1 rgba(255, 255, 255, 255));\n"
-            "background-color: rgb(50, 50, 50);")
+        SlideShifter.setStyleSheet(u"background-color: rgb(50, 50, 50);")
         self.centralwidget = QWidget(SlideShifter)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.start_button = QPushButton(self.centralwidget)
-        self.start_button.setObjectName(u"start_button")
-        self.start_button.setGeometry(QRect(50, 190, 300, 120))
-        self.start_button.setStyleSheet(u"background-color: rgb(128, 185, 116);\n"
-                                        "background-color: rgb(123, 178, 113);\n"
-                                        "font: 400 24pt \"Helvetica Neue\";\n"
-                                        "color: rgb(0, 0, 0);")
-        self.stop_button = QPushButton(self.centralwidget)
-        self.stop_button.setObjectName(u"stop_button")
-        self.stop_button.setGeometry(QRect(50, 340, 300, 120))
-        self.stop_button.setStyleSheet(u"background-color: rgb(234, 77, 62);\n"
-                                       "background-color: rgb(220, 72, 60);\n"
-                                       "color: rgb(0, 0, 0);\n"
-                                       "font: 400 24pt \"Helvetica Neue\";")
+
+        self.label_camera = QLabel(self.centralwidget)
+        self.label_camera.setObjectName(u"label_camera")
+        self.label_camera.setGeometry(QRect(12, 10, 62, 19))
+        self.label_camera.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
+                                        "color: rgb(211, 213, 213);\n"
+                                        "font: 400 16pt \"Helvetica Neue\";\n")
+        self.comboBox_camera = QComboBox(self.centralwidget)
+        self.comboBox_camera.setObjectName(u"comboBox_camera")
+        self.comboBox_camera.setGeometry(QRect(10, 32, 68, 21))
+        self.comboBox_camera.setStyleSheet(u"background-color: rgb(32, 32, 32);\n"
+                                           "color: rgb(229, 231, 231);\n"
+                                           "font: 300 14pt \"Helvetica Neue\";")
+
+        self.label_tracking = QLabel(self.centralwidget)
+        self.label_tracking.setObjectName(u"label_tracking")
+        self.label_tracking.setGeometry(QRect(102, 10, 116, 19))
+        self.label_tracking.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
+                                          "color: rgb(211, 213, 213);\n"
+                                          "font: 400 16pt \"Helvetica Neue\";\n")
+        self.comboBox_tracking = QComboBox(self.centralwidget)
+        self.comboBox_tracking.setObjectName(u"comboBox_tracking")
+        self.comboBox_tracking.setGeometry(QRect(100, 32, 122, 21))
+        self.comboBox_tracking.setStyleSheet(u"background-color: rgb(32, 32, 32);\n"
+                                             "color: rgb(229, 231, 231);\n"
+                                             "font: 300 14pt \"Helvetica Neue\";\n")
+
         self.label_slide = QLabel(self.centralwidget)
         self.label_slide.setObjectName(u"label_slide")
         self.label_slide.setGeometry(QRect(90, 90, 100, 45))
@@ -51,6 +65,35 @@ class UiSlideShifter(QMainWindow):
         self.label_slide.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
                                        "color: rgb(247, 249, 249);\n"
                                        "font: 900 34pt \"Futura\";")
+        self.label_shifter = QLabel(self.centralwidget)
+        self.label_shifter.setObjectName(u"label_shifter")
+        self.label_shifter.setGeometry(QRect(190, 90, 120, 45))
+        self.label_shifter.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
+                                         "color: rgb(116, 170, 255);\n"
+                                         "font: 900 34pt \"Futura\";")
+
+        self.start_button = QPushButton(self.centralwidget)
+        self.start_button.setObjectName(u"start_button")
+        self.start_button.setGeometry(QRect(50, 190, 300, 120))
+        self.start_button.setStyleSheet(u"background-color: rgb(123, 178, 113);\n"
+                                        "font: 400 24pt \"Helvetica Neue\";\n"
+                                        "color: rgb(0, 0, 0);")
+
+        self.stop_button = QPushButton(self.centralwidget)
+        self.stop_button.setObjectName(u"stop_button")
+        self.stop_button.setGeometry(QRect(50, 340, 300, 120))
+        self.stop_button.setStyleSheet(u"background-color: rgb(220, 72, 60);\n"
+                                       "color: rgb(0, 0, 0);\n"
+                                       "font: 400 24pt \"Helvetica Neue\";")
+
+        self.log_text_edit = QTextEdit(self.centralwidget)
+        self.log_text_edit.setObjectName(u"log_text_edit")
+        self.log_text_edit.setReadOnly(True)
+        self.log_text_edit.setGeometry(QRect(50, 490, 300, 170))
+        self.log_text_edit.setStyleSheet(u"background-color: rgb(32, 32, 32);\n"
+                                         "color: rgb(229, 231, 231);\n"
+                                         "font: 400 15pt \"Helvetica Neue\";")
+
         self.label_by = QLabel(self.centralwidget)
         self.label_by.setObjectName(u"label_by")
         self.label_by.setGeometry(QRect(130, 685, 23, 21))
@@ -61,64 +104,21 @@ class UiSlideShifter(QMainWindow):
         font1.setItalic(False)
         self.label_by.setFont(font1)
         self.label_by.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
-                                    "color: rgb(84, 85, 85);\n"
                                     "color: rgb(156, 158, 158);\n"
-                                    "font: 600 16pt \"Futura\";\n"
-                                    "")
-        self.comboBox_camera = QComboBox(self.centralwidget)
-        self.comboBox_camera.setObjectName(u"comboBox_camera")
-        self.comboBox_camera.setGeometry(QRect(10, 32, 62, 21))
-        self.comboBox_camera.setStyleSheet(u"background-color: rgb(32, 32, 32);\n"
-                                           "color: rgb(229, 231, 231);\n"
-                                           "font: 300 14pt \"Helvetica Neue\";")
-        self.label_camera = QLabel(self.centralwidget)
-        self.label_camera.setObjectName(u"label_camera")
-        self.label_camera.setGeometry(QRect(10, 10, 62, 19))
-        self.label_camera.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
-                                        "color: rgb(32, 32, 32);\n"
-                                        "color: rgb(211, 213, 213);\n"
-                                        "font: 400 16pt \"Helvetica Neue\";\n"
-                                        "")
-        self.log_text_edit = QTextEdit(self.centralwidget)
-        self.log_text_edit.setObjectName(u"log_text_edit")
-        self.log_text_edit.setReadOnly(True)
-        self.log_text_edit.setGeometry(QRect(50, 490, 300, 170))
-        self.log_text_edit.setStyleSheet(u"background-color: rgb(32, 32, 32);\n"
-                                         "color: rgb(229, 231, 231);\n"
-                                         "font: 400 15pt \"Helvetica Neue\";")
-        self.label_hub = QLabel(self.centralwidget)
-        self.label_hub.setObjectName(u"label_hub")
-        self.label_hub.setGeometry(QRect(234, 685, 31, 21))
-        self.label_hub.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
-                                     "color: rgb(92, 156, 255);\n"
-                                     "font: 600 16pt \"Futura\";\n"
-                                     "")
+                                    "font: 600 16pt \"Futura\";\n")
         self.label_singularity = QLabel(self.centralwidget)
         self.label_singularity.setObjectName(u"label_singularity")
         self.label_singularity.setGeometry(QRect(155, 685, 83, 21))
         self.label_singularity.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
                                              "color: rgb(224, 226, 226);\n"
-                                             "font: 600 16pt \"Futura\";\n"
-                                             "")
-        self.label_shifter = QLabel(self.centralwidget)
-        self.label_shifter.setObjectName(u"label_shifter")
-        self.label_shifter.setGeometry(QRect(190, 90, 120, 45))
-        self.label_shifter.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
-                                         "color: rgb(116, 170, 255);\n"
-                                         "font: 900 34pt \"Futura\";")
-        self.label_tracking = QLabel(self.centralwidget)
-        self.label_tracking.setObjectName(u"label_tracking")
-        self.label_tracking.setGeometry(QRect(100, 10, 116, 19))
-        self.label_tracking.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
-                                          "color: rgb(211, 213, 213);\n"
-                                          "font: 400 16pt \"Helvetica Neue\";\n"
-                                          "")
-        self.comboBox_tracking = QComboBox(self.centralwidget)
-        self.comboBox_tracking.setObjectName(u"comboBox_tracking")
-        self.comboBox_tracking.setGeometry(QRect(100, 32, 116, 21))
-        self.comboBox_tracking.setStyleSheet(u"background-color: rgb(32, 32, 32);\n"
-                                             "color: rgb(229, 231, 231);\n"
-                                             "font: 300 14pt \"Helvetica Neue\";\n")
+                                             "font: 600 16pt \"Futura\";\n")
+        self.label_hub = QLabel(self.centralwidget)
+        self.label_hub.setObjectName(u"label_hub")
+        self.label_hub.setGeometry(QRect(234, 685, 31, 21))
+        self.label_hub.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
+                                     "color: rgb(92, 156, 255);\n"
+                                     "font: 600 16pt \"Futura\";\n")
+
         options_to_track = ["Двух рук", "Правой руки", "Левой руки"]
         for i in range(3):
             self.comboBox_tracking.addItem("")
@@ -127,13 +127,15 @@ class UiSlideShifter(QMainWindow):
         SlideShifter.setCentralWidget(self.centralwidget)
         self.get_connected_cameras()
         self.comboBox_camera.activated.connect(self.activate_camera)
-        self.comboBox_tracking.activated.connect(self.choosing_hand_to_tracking)
+        self.comboBox_tracking.activated.connect(self.choosing_hand_to_track)
         self.retranslateUi(SlideShifter)
 
         QMetaObject.connectSlotsByName(SlideShifter)
         self.connect_buttons()
 
     def retranslateUi(self, SlideShifter):
+        """Set text to objects"""
+
         SlideShifter.setWindowTitle(QCoreApplication.translate("SlideShifter", u"MainWindow", None))
         self.start_button.setText(
             QCoreApplication.translate("SlideShifter", u"\u041d\u0430\u0447\u0430\u0442\u044c", None))
@@ -158,11 +160,14 @@ class UiSlideShifter(QMainWindow):
                                                                None))
 
     def connect_buttons(self):
-        # Connect button clicks to corresponding functions
+        """Activate buttons"""
+
         self.start_button.clicked.connect(self.start_hand_tracking)
         self.stop_button.clicked.connect(self.stop_hand_tracking)
 
     def get_connected_cameras(self):
+        """Get the ID of all cameras connected to the PC"""
+
         cameras = []
         for i in range(10):
             cap = cv2.VideoCapture(i)
@@ -174,34 +179,63 @@ class UiSlideShifter(QMainWindow):
             self.comboBox_camera.setItemText(i, QCoreApplication.translate("SlideShifter", f"№{i + 1}", None))
         ht.cameras = cameras
 
-    def activate_camera(self, index):
+    def activate_camera(self, index: int):
+        """Selecting a camera for hand tracking"""
+
         ht.camera_index = index
         ht.hand_tracking_function()
 
-    def choosing_hand_to_tracking(self, index):
+    def choosing_hand_to_track(self, index: int):
+        """Choosing hand to track"""
+
         if index == 0:
             ht.hand_to_track = None
-        if index == 1:
+        elif index == 1:
             ht.hand_to_track = "Right"
         elif index == 2:
             ht.hand_to_track = "Left"
 
     def start_hand_tracking(self):
-        # Start hand tracking function
+        """Hand tracing start"""
+
         ht.is_started = True
-        self.append_to_log("<font color='#3c6eb4'>Включено отслеживание рук</font><br>")
+        text_for_log = "Включено отслеживание рук"
+        self.append_to_log(self.format_text_with_color(text=text_for_log, color="orange"))
 
     def stop_hand_tracking(self):
+        """Hand tracking suspension"""
+
         # Stop hand tracking function
         ht.is_started = False
-        self.append_to_log("<font color='#3c6eb4'>Приостановлено отслеживание рук</font><br>")
+        text_for_log = "Приостановлено отслеживание рук"
+        self.append_to_log(self.format_text_with_color(text=text_for_log, color="orange"))
 
-    def append_to_log(self, text):
-        # Add text to the end of the log field
+    def format_text_with_color(self, text: str, color: str):
+        """Converting text into html format"""
+
+        colors = {
+            "white": "e0e2e2",
+            "blue": "5c9cff",
+            "green": "6e9664",
+            "red": "dc483c",
+            "grey": "9c9e9e",
+            "pink": "e8b0e8",
+            "yellow": "ede59d",
+            "orange": "ff7f50",
+        }
+        if color not in colors.keys():
+            color = "white"
+        return f"<font color='#{colors[color]}'>{text}</font><br>"
+
+    def append_to_log(self, text: str):
+        """Displaying the message in the logging field"""
+
         self.log_text_edit.insertHtml(text)
         self.log_text_edit.verticalScrollBar().setValue(self.log_text_edit.verticalScrollBar().maximum())
 
     def closeEvent(self, event):
+        """Displaying the application close window """
+
         # Handle close event for the main window
         reply = self.show_quit_confirmation_dialog()
         if reply == QMessageBox.Yes:
@@ -212,11 +246,24 @@ class UiSlideShifter(QMainWindow):
             event.ignore()
 
     def show_quit_confirmation_dialog(self):
-        # Show quit confirmation dialog
+        """Get yes or no when person want to close application"""
+
         exit_answer = QMessageBox.question(self, "Подтверждение закрытия",
-                                           "Вы уверены, что хотите закрыть приложение?",
+                                           "Закрыть приложение?",
                                            QMessageBox.No | QMessageBox.Yes, QMessageBox.No)
         return exit_answer
+
+    def show_error_message(self, text: str):
+        """Displaying the exit window in case of an error"""
+
+        message_box = QMessageBox()
+        message_box.setWindowTitle("Error message")
+        message_box.setText(text)
+        message_box.addButton(QMessageBox.Ok)
+        message_box.exec()
+
+        ht.is_video_on = False
+        sys.exit(1)
 
 
 class HandDetector:
@@ -227,6 +274,8 @@ class HandDetector:
         self.hands = self.mp_hands.Hands(mode, max_hands, model_complexity, detection_con, track_con)
 
     def find_hands(self, image, draw=True):
+        """Look for hands in the picture"""
+
         if image is None:
             return None
 
@@ -240,13 +289,16 @@ class HandDetector:
         return image
 
     def find_position(self, image, exact_hand=None, draw=True):
+        """On the founded hands draw their dots and a frame"""
+
+        if exact_hand is not None and exact_hand not in ["Right", "Left"]:
+            exact_hand = None
+
         self.lm_list = []
 
         if self.results.multi_hand_landmarks:
             for i in range(len(self.results.multi_hand_landmarks)):
-                label = ""
-                for handedness in self.results.multi_handedness[i].classification:
-                    label = handedness.label
+                label = self.results.multi_handedness[i].classification[0].label
 
                 if label == exact_hand or exact_hand is None:
                     hand = self.results.multi_hand_landmarks[i]
@@ -270,6 +322,8 @@ class HandDetector:
         return self.lm_list
 
     def find_distance(self, hand: int, index1: int, index2: int, image, draw=True):
+        """Find the distance between points on the hand"""
+
         lm_list = self.lm_list[hand]
         x1, y1 = lm_list[index1][1], lm_list[index1][2]
         x2, y2 = lm_list[index2][1], lm_list[index2][2]
@@ -292,7 +346,7 @@ class HandTracking:
         self.is_video_on = True
         self.is_started = False
         self.hand_to_track = None  # "Left" or "Right" or None
-        self.cameras = [0, ]
+        self.cameras = []
         self.camera_index = 0
         self.detector = HandDetector(detection_con=0.8)
 
@@ -311,7 +365,9 @@ class HandTracking:
         self.length_in_gesture = None
         self.start_time_to_setup_positions = None
 
-    def find_x_coordinate_of_thumb(self, landmarks: list):
+    def find_x_coordinate_of_thumbs(self, landmarks: list):
+        """Finding the x-coordinate of the thumbs"""
+
         try:
             first_hand = landmarks[0]
             x1 = first_hand[4][1]
@@ -326,6 +382,8 @@ class HandTracking:
         return x1, x2
 
     def make_slide_shift(self, action: str, idx: int, amount_of_slides: int):
+        """Switching between one or more slides"""
+
         for i in range(amount_of_slides):
             pyautogui.press(action)
         self.is_slide_switched[idx] = True
@@ -334,20 +392,24 @@ class HandTracking:
             side_to_switch = "вправо"
         else:
             side_to_switch = "влево"
-        window.append_to_log(
-            f"<font color='#6e9664'>{amount_of_slides} слайд(-а) {side_to_switch} с помощью {idx + 1}-ой руки</font><br>")
 
-        self.start_gesture_time[idx] = None
+        text_for_log = f"{amount_of_slides} слайд(-а) {side_to_switch} с помощью {idx + 1}-ой руки"
+        window.append_to_log(window.format_text_with_color(text=text_for_log, color="green"))
+
         self.start_count_time[idx] = None
         self.start_thumb_position[idx] = None
+        self.start_gesture_time[idx] = None
+        self.count_or_not[idx] = True
+        self.slides_to_switch[idx] = 0
         self.ready_to_slide[idx] = False
         self.marker_to_print[idx] = 0
-        self.slides_to_switch[idx] = 0
-        self.count_or_not[idx] = True
 
-    def setup_units(self, img, average_length, cnt, position):
+    def setup_units(self, img, average_length: float, cnt: int, position: str):
+        """Determining values for the hand in the basic and gesture positions"""
+
         lm_list = self.detector.find_position(img, exact_hand="Right")
-        x = self.find_x_coordinate_of_thumb(lm_list)[0]
+        x = self.find_x_coordinate_of_thumbs(lm_list)[0]
+
         if x is not None:
             if self.start_time_to_setup_positions is None:
                 self.start_time_to_setup_positions = time.time()
@@ -355,12 +417,13 @@ class HandTracking:
             length1 = self.detector.find_distance(0, 4, 8, img, draw=False)
             length2 = self.detector.find_distance(0, 4, 12, img, draw=False)
             length = length1 + length2
-
             is_continue = True
+
             if average_length != 0:
-                if length > average_length * 1.1 or length < average_length - (average_length * 1.1 - average_length):
-                    window.append_to_log(
-                        f"<font color='#d3d5d5'>Не двигайте руку! Попробуйте еще раз.</font><br>")
+                if length > average_length * 1.2 or length < average_length - average_length * 0.2:
+                    text_for_log = "Не двигайте руку! Попробуйте еще раз."
+                    window.append_to_log(window.format_text_with_color(text=text_for_log, color="red"))
+
                     self.start_time_to_setup_positions = None
                     average_length = 0
                     cnt = 0
@@ -372,45 +435,54 @@ class HandTracking:
                 average_length = length
 
             if is_continue:
+                color = "blue" if self.length_in_normal_position is None else "pink"
                 dif_times = time.time() - self.start_time_to_setup_positions
+
                 if dif_times >= 4:
                     dist = 0
+
                     if position == "normal":
                         self.length_in_normal_position = average_length
                         dist = self.length_in_normal_position
                     elif position == "gesture":
                         self.length_in_gesture = average_length
                         dist = self.length_in_gesture
+
                     self.start_time_to_setup_positions = None
 
-                    window.append_to_log(
-                        f"<font color='#d3d5d5'>Данные настроены. "
-                        f"Расстояние между пальцами: {round(dist)}</font><br>")
-                    window.append_to_log("")
+                    text_for_log = f"Данные настроены."
+                    window.append_to_log(window.format_text_with_color(text=text_for_log, color="green"))
+                    text_for_log = f"Расстояние между пальцами: {round(dist)}"
+                    window.append_to_log(window.format_text_with_color(text=text_for_log, color=color))
 
                     average_length = 0
                     cnt = 0
                 elif dif_times >= 3:
                     if cnt == 2:
                         cnt += 1
-                        window.append_to_log(f"<font color='#d3d5d5'>1...</font><br>")
+                        window.append_to_log(window.format_text_with_color(text="1...", color=color))
                 elif dif_times >= 2:
                     if cnt == 1:
                         cnt += 1
-                        window.append_to_log(f"<font color='#d3d5d5'>2...</font><br>")
+                        window.append_to_log(window.format_text_with_color(text="2...", color=color))
                 elif dif_times >= 1:
                     if cnt == 0:
                         cnt += 1
-                        window.append_to_log(f"<font color='#d3d5d5'>3...</font><br>")
+                        window.append_to_log(window.format_text_with_color(text="3...", color=color))
         else:
             if self.start_time_to_setup_positions is not None:
-                window.append_to_log(
-                    f"<font color='#d3d5d5'>Не убирайте руку от камеры! Попробуйте еще раз.</font><br>")
+                text_for_log = "Не убирайте руку от камеры! Попробуйте еще раз."
+                window.append_to_log(window.format_text_with_color(text=text_for_log, color="red"))
                 self.start_time_to_setup_positions = None
                 cnt = 0
         return average_length, cnt
 
     def hand_tracking_function(self):
+        """The main algorithm for gesture recognition and slide shifting"""
+
+        if len(self.cameras) == 0:
+            window.show_error_message("Камера не обнаружена. Подключите камеру и перезапустите приложение.")
+
         # Initialize the video window
         cap = cv2.VideoCapture(self.cameras[self.camera_index])
         width, height = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) // 2, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) // 2
@@ -425,16 +497,14 @@ class HandTracking:
         average_length = 0
         count_to_print = 0
 
-        window.append_to_log(
-            f"<font color='#d3d5d5'>Необходимо выполнить настройку. Следуйте инструкции.</font><br>")
-        window.append_to_log(
-            f"<font color='#d3d5d5'>Поместите руку в кадр на расстоянии, "
-            f"на котором будет использоваться программа.</font><br>")
-        window.append_to_log(
-            f"<font color='#d3d5d5'>Сначала удерживайте руку раскрытой ладонью в камеру</font><br>")
-        window.append_to_log(
-            f"<font color='#d3d5d5'>После удерживайте руку в положении жеста</font><br>")
-        window.append_to_log("")
+        text_for_log = "Поместите руку в кадр на расстоянии,"
+        window.append_to_log(window.format_text_with_color(text=text_for_log, color="grey"))
+        text_for_log = "на котором будет использоваться программа."
+        window.append_to_log(window.format_text_with_color(text=text_for_log, color="grey"))
+        text_for_log = "1. Удерживайте руку раскрытой ладонью в камеру"
+        window.append_to_log(window.format_text_with_color(text=text_for_log, color="blue"))
+        text_for_log = "2. Удерживайте руку в положении жеста"
+        window.append_to_log(window.format_text_with_color(text=text_for_log, color="pink"))
 
         while self.is_video_on:
             # Capture a frame from the camera
@@ -443,17 +513,19 @@ class HandTracking:
             img = self.detector.find_hands(image)
 
             if self.is_started and self.length_in_normal_position is None:
-                average_length, count_to_print = self.setup_units(img, average_length, count_to_print, position="normal")
+                average_length, count_to_print = self.setup_units(img, average_length, count_to_print,
+                                                                  position="normal")
 
             elif self.is_started and self.length_in_gesture is None:
-                average_length, count_to_print = self.setup_units(img, average_length, count_to_print, position="gesture")
+                average_length, count_to_print = self.setup_units(img, average_length, count_to_print,
+                                                                  position="gesture")
 
             elif self.is_started:
                 # Detect hands landmarks in the frame
                 lm_list = self.detector.find_position(img, exact_hand=self.hand_to_track)
 
                 # Find the x-coordinate of the thumbs
-                x1, x2 = self.find_x_coordinate_of_thumb(lm_list)
+                x1, x2 = self.find_x_coordinate_of_thumbs(lm_list)
 
                 for i, thumb in enumerate([x1, x2]):
                     if thumb is None:
@@ -491,37 +563,41 @@ class HandTracking:
 
                             if self.ready_to_slide[i]:
                                 if self.marker_to_print[i] == 1:
+                                    text_for_log = f"Готов переключить {self.slides_to_switch[i]} слайд(-а) {i + 1}-ой рукой"
                                     window.append_to_log(
-                                        f"<font color='#d3d5d5'>Готов переключить {self.slides_to_switch[i]} слайд(-а) {i + 1}-ой рукой</font><br>")
+                                        window.format_text_with_color(text=text_for_log, color="white"))
 
-                                if thumb > self.start_thumb_position[i] + self.length_in_normal_position:  # If the hand moves to the right
-                                    self.make_slide_shift(action="right", idx=i,
+                                if (thumb > self.start_thumb_position[i]
+                                        + self.length_in_normal_position / 4):  # If the hand moves to the right
+                                    self.make_slide_shift(action="right",
+                                                          idx=i,
                                                           amount_of_slides=self.slides_to_switch[i])
 
-                                elif thumb < self.start_thumb_position[i] - self.length_in_normal_position:  # If the hand moves to the left
-                                    self.make_slide_shift(action="left", idx=i,
+                                elif (thumb < self.start_thumb_position[i]
+                                      - self.length_in_normal_position / 4):  # If the hand moves to the left
+                                    self.make_slide_shift(action="left",
+                                                          idx=i,
                                                           amount_of_slides=self.slides_to_switch[i])
-
-                        elif length1 + length2 > self.length_in_gesture * 1.7:
+                        else:
                             if self.start_count_time[i] is not None:
                                 if time.time() - self.start_count_time[i] > self.count_time_threshold + 1:
-                                    self.slides_to_switch[i] = 0
                                     self.start_count_time[i] = None
                                     self.start_thumb_position[i] = None
+                                    self.slides_to_switch[i] = 0
 
                             if self.start_thumb_position[i] is not None:
-                                if (self.start_thumb_position[i] - thumb > self.length_in_gesture or
-                                        thumb - self.start_thumb_position[i] > self.length_in_gesture):
-                                    self.slides_to_switch[i] = 0
+                                if (self.start_thumb_position[i] - thumb > self.length_in_gesture * 1.2 or
+                                        thumb - self.start_thumb_position[i] > self.length_in_gesture * 1.2):
                                     self.start_count_time[i] = None
                                     self.start_thumb_position[i] = None
+                                    self.slides_to_switch[i] = 0
 
                             self.start_gesture_time[i] = None
                             self.count_or_not[i] = True
-                            self.marker_to_print[i] = 0
                             self.ready_to_slide[i] = False
+                            self.marker_to_print[i] = 0
 
-                    elif length1 + length2 > self.length_in_gesture * 1.7:
+                    elif length1 + length2 > self.length_in_normal_position / 3:
                         self.is_slide_switched[i] = False
 
             # Display the window
@@ -534,6 +610,8 @@ class HandTracking:
 
 
 def run_application():
+    """Program launch"""
+
     window.setupUi(window)
     window.show()
 
