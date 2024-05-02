@@ -4,6 +4,7 @@ import math
 import pyautogui
 import sys
 import time
+import traceback
 
 from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect)
 from PySide6.QtGui import (QFont, QRadialGradient)
@@ -257,7 +258,7 @@ class UiSlideShifter(QMainWindow):
         """Displaying the exit window in case of an error"""
 
         message_box = QMessageBox()
-        message_box.setWindowTitle("Error message")
+        message_box.setWindowTitle("Error window")
         message_box.setText(text)
         message_box.addButton(QMessageBox.Ok)
         message_box.exec()
@@ -617,11 +618,23 @@ def run_application():
 
     ht.hand_tracking_function()
 
-    sys.exit(app.exec())
+    sys.exit(2)
 
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = UiSlideShifter()
-    ht = HandTracking()
-    run_application()
+    try:
+        app = QApplication(sys.argv)
+        window = UiSlideShifter()
+    except Exception:
+        sys.exit(1)
+
+    try:
+        ht = HandTracking()
+        run_application()
+
+    except Exception:
+        traceback_str = traceback.format_exc()
+        window.show_error_message(f"Произошла неизвестная ошибка.\n"
+                                  f"Свяжитесь с исполнителем и отправьте скриншот ошибки.\n\n"
+                                  f"{traceback_str}")
+        sys.exit(1)
