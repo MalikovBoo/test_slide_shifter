@@ -6,10 +6,10 @@ import sys
 import time
 import traceback
 
-from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect)
+from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect, Qt)
 from PySide6.QtGui import (QFont, QRadialGradient)
 from PySide6.QtWidgets import (QApplication, QComboBox, QLabel, QMainWindow,
-                               QPushButton, QSizePolicy, QTextEdit, QWidget, QMessageBox)
+                               QPushButton, QSizePolicy, QTextEdit, QWidget, QMessageBox, QGridLayout)
 
 
 class UiSlideShifter(QMainWindow):
@@ -24,39 +24,73 @@ class UiSlideShifter(QMainWindow):
 
         SlideShifter.move(0, 0)
         SlideShifter.resize(400, 720)
-        SlideShifter.setStyleSheet(u"background-color: rgb(50, 50, 50);")
+        SlideShifter.setStyleSheet(
+            u"background-color: qradialgradient(spread:pad, cx:0.5, cy:0.497014, radius:0.485181, fx:0.496641, fy:0.443, stop:0 rgba(38, 90, 222, 255), stop:0.16 rgba(150, 161, 228, 255), stop:0.225 rgba(140, 163, 244, 255), stop:0.285 rgba(202, 189, 247, 255), stop:0.345 rgba(153, 172, 255, 255), stop:0.415 rgba(208, 187, 231, 255), stop:0.52 rgba(123, 118, 228, 255), stop:0.57 rgba(98, 128, 208, 255), stop:0.635 rgba(121, 139, 200, 255), stop:0.695 rgba(137, 146, 201, 255), stop:0.75 rgba(129, 151, 216, 255), stop:0.815 rgba(154, 164, 208, 255), stop:0.88 rgba(137, 148, 205, 255), stop:0.935 rgba(216, 217, 224, 255), stop:1 rgba(255, 255, 255, 255));\n"
+            "background-color: rgb(50, 50, 50);")
         self.centralwidget = QWidget(SlideShifter)
         self.centralwidget.setObjectName(u"centralwidget")
+        self.gridLayout = QGridLayout(self.centralwidget)
+        self.gridLayout.setObjectName(u"gridLayout")
 
         self.label_camera = QLabel(self.centralwidget)
         self.label_camera.setObjectName(u"label_camera")
-        self.label_camera.setGeometry(QRect(12, 10, 62, 19))
         self.label_camera.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
+                                        "color: rgb(32, 32, 32);\n"
                                         "color: rgb(211, 213, 213);\n"
-                                        "font: 400 16pt \"Helvetica Neue\";\n")
+                                        "font: 400 16pt \"Helvetica Neue\";\n"
+                                        "")
+        self.gridLayout.addWidget(self.label_camera, 0, 0, 1, 1)
+
         self.comboBox_camera = QComboBox(self.centralwidget)
         self.comboBox_camera.setObjectName(u"comboBox_camera")
-        self.comboBox_camera.setGeometry(QRect(10, 32, 68, 21))
         self.comboBox_camera.setStyleSheet(u"background-color: rgb(32, 32, 32);\n"
                                            "color: rgb(229, 231, 231);\n"
                                            "font: 300 14pt \"Helvetica Neue\";")
+        self.gridLayout.addWidget(self.comboBox_camera, 2, 0, 1, 1)
 
         self.label_tracking = QLabel(self.centralwidget)
         self.label_tracking.setObjectName(u"label_tracking")
-        self.label_tracking.setGeometry(QRect(102, 10, 116, 19))
         self.label_tracking.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
+                                          "color: rgb(32, 32, 32);\n"
                                           "color: rgb(211, 213, 213);\n"
-                                          "font: 400 16pt \"Helvetica Neue\";\n")
+                                          "font: 400 16pt \"Helvetica Neue\";\n"
+                                          "")
+        self.gridLayout.addWidget(self.label_tracking, 0, 2, 1, 1)
+
         self.comboBox_tracking = QComboBox(self.centralwidget)
         self.comboBox_tracking.setObjectName(u"comboBox_tracking")
-        self.comboBox_tracking.setGeometry(QRect(100, 32, 122, 21))
         self.comboBox_tracking.setStyleSheet(u"background-color: rgb(32, 32, 32);\n"
                                              "color: rgb(229, 231, 231);\n"
-                                             "font: 300 14pt \"Helvetica Neue\";\n")
+                                             "font: 300 14pt \"Helvetica Neue\";")
+        options_to_track = ["Двух рук", "Правой руки", "Левой руки"]
+        for i in range(3):
+            self.comboBox_tracking.addItem("")
+            self.comboBox_tracking.setItemText(i, QCoreApplication.translate("SlideShifter", options_to_track[i], None))
+        self.gridLayout.addWidget(self.comboBox_tracking, 2, 2, 1, 1)
+
+        self.start_button = QPushButton(self.centralwidget)
+        self.start_button.setObjectName(u"start_button")
+        self.start_button.setStyleSheet(u"background-color: rgb(128, 185, 116);\n"
+                                        "background-color: rgb(123, 178, 113);\n"
+                                        "font: 400 24pt \"Helvetica Neue\";\n"
+                                        "color: rgb(0, 0, 0);")
+        self.gridLayout.addWidget(self.start_button, 4, 0, 1, 6)
+
+        self.stop_button = QPushButton(self.centralwidget)
+        self.stop_button.setObjectName(u"stop_button")
+        sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.stop_button.sizePolicy().hasHeightForWidth())
+        self.stop_button.setSizePolicy(sizePolicy)
+        self.stop_button.setStyleSheet(u"background-color: rgb(234, 77, 62);\n"
+                                       "background-color: rgb(220, 72, 60);\n"
+                                       "color: rgb(0, 0, 0);\n"
+                                       "font: 400 24pt \"Helvetica Neue\";")
+        self.gridLayout.addWidget(self.stop_button, 5, 0, 1, 6)
 
         self.label_slide = QLabel(self.centralwidget)
         self.label_slide.setObjectName(u"label_slide")
-        self.label_slide.setGeometry(QRect(90, 90, 100, 45))
         font = QFont()
         font.setFamilies([u"Futura"])
         font.setPointSize(34)
@@ -66,38 +100,24 @@ class UiSlideShifter(QMainWindow):
         self.label_slide.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
                                        "color: rgb(247, 249, 249);\n"
                                        "font: 900 34pt \"Futura\";")
+        self.gridLayout.addWidget(self.label_slide, 3, 1, 1, 1)
+
         self.label_shifter = QLabel(self.centralwidget)
         self.label_shifter.setObjectName(u"label_shifter")
-        self.label_shifter.setGeometry(QRect(190, 90, 120, 45))
         self.label_shifter.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
                                          "color: rgb(116, 170, 255);\n"
                                          "font: 900 34pt \"Futura\";")
-
-        self.start_button = QPushButton(self.centralwidget)
-        self.start_button.setObjectName(u"start_button")
-        self.start_button.setGeometry(QRect(50, 190, 300, 120))
-        self.start_button.setStyleSheet(u"background-color: rgb(123, 178, 113);\n"
-                                        "font: 400 24pt \"Helvetica Neue\";\n"
-                                        "color: rgb(0, 0, 0);")
-
-        self.stop_button = QPushButton(self.centralwidget)
-        self.stop_button.setObjectName(u"stop_button")
-        self.stop_button.setGeometry(QRect(50, 340, 300, 120))
-        self.stop_button.setStyleSheet(u"background-color: rgb(220, 72, 60);\n"
-                                       "color: rgb(0, 0, 0);\n"
-                                       "font: 400 24pt \"Helvetica Neue\";")
+        self.gridLayout.addWidget(self.label_shifter, 3, 2, 1, 1)
 
         self.log_text_edit = QTextEdit(self.centralwidget)
         self.log_text_edit.setObjectName(u"log_text_edit")
-        self.log_text_edit.setReadOnly(True)
-        self.log_text_edit.setGeometry(QRect(50, 490, 300, 170))
         self.log_text_edit.setStyleSheet(u"background-color: rgb(32, 32, 32);\n"
-                                         "color: rgb(229, 231, 231);\n"
-                                         "font: 400 15pt \"Helvetica Neue\";")
+                                    "color: rgb(229, 231, 231);\n"
+                                    "font: 300 18pt \"Helvetica Neue\";")
+        self.gridLayout.addWidget(self.log_text_edit, 6, 0, 1, 6)
 
         self.label_by = QLabel(self.centralwidget)
         self.label_by.setObjectName(u"label_by")
-        self.label_by.setGeometry(QRect(130, 685, 23, 21))
         font1 = QFont()
         font1.setFamilies([u"Futura"])
         font1.setPointSize(16)
@@ -105,66 +125,55 @@ class UiSlideShifter(QMainWindow):
         font1.setItalic(False)
         self.label_by.setFont(font1)
         self.label_by.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
+                                    "color: rgb(84, 85, 85);\n"
                                     "color: rgb(156, 158, 158);\n"
-                                    "font: 600 16pt \"Futura\";\n")
+                                    "font: 600 16pt \"Futura\";\n"
+                                    "")
+        self.gridLayout.addWidget(self.label_by, 7, 0, 1, 1, Qt.AlignRight)
+
         self.label_singularity = QLabel(self.centralwidget)
         self.label_singularity.setObjectName(u"label_singularity")
-        self.label_singularity.setGeometry(QRect(155, 685, 83, 21))
         self.label_singularity.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
                                              "color: rgb(224, 226, 226);\n"
-                                             "font: 600 16pt \"Futura\";\n")
+                                             "font: 600 16pt \"Futura\";\n"
+                                             "")
+        self.gridLayout.addWidget(self.label_singularity, 7, 1, 1, 1, Qt.AlignRight)
+
         self.label_hub = QLabel(self.centralwidget)
         self.label_hub.setObjectName(u"label_hub")
-        self.label_hub.setGeometry(QRect(234, 685, 31, 21))
         self.label_hub.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
+                                     "color: rgb(156, 158, 158);\n"
                                      "color: rgb(92, 156, 255);\n"
-                                     "font: 600 16pt \"Futura\";\n")
-
-        options_to_track = ["Двух рук", "Правой руки", "Левой руки"]
-        for i in range(3):
-            self.comboBox_tracking.addItem("")
-            self.comboBox_tracking.setItemText(i, QCoreApplication.translate("SlideShifter", options_to_track[i], None))
+                                     "font: 600 16pt \"Futura\";\n"
+                                     "")
+        self.gridLayout.addWidget(self.label_hub, 7, 2, 1, 1, Qt.AlignLeft)
 
         SlideShifter.setCentralWidget(self.centralwidget)
-        self.get_connected_cameras()
-        self.comboBox_camera.activated.connect(self.activate_camera)
-        self.comboBox_tracking.activated.connect(self.choosing_hand_to_track)
-        self.retranslateUi(SlideShifter)
-
         QMetaObject.connectSlotsByName(SlideShifter)
+
+        self.retranslateUi(SlideShifter)
+        self.get_connected_cameras()
         self.connect_buttons()
 
     def retranslateUi(self, SlideShifter):
-        """Set text to objects"""
-
-        SlideShifter.setWindowTitle(QCoreApplication.translate("SlideShifter", u"MainWindow", None))
-        self.start_button.setText(
-            QCoreApplication.translate("SlideShifter", u"\u041d\u0430\u0447\u0430\u0442\u044c", None))
-        self.stop_button.setText(QCoreApplication.translate("SlideShifter",
-                                                            u"\u041f\u0440\u0438\u043e\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u044c ",
-                                                            None))
-        self.label_slide.setText(QCoreApplication.translate("SlideShifter",
-                                                            u"<html><head/><body><p align=\"center\">Slide </p></body></html>",
-                                                            None))
-        self.label_by.setText(QCoreApplication.translate("SlideShifter", u"by ", None))
-        self.label_camera.setText(
-            QCoreApplication.translate("SlideShifter", u"\u041a\u0430\u043c\u0435\u0440\u0430:", None))
-        self.label_hub.setText(
-            QCoreApplication.translate("SlideShifter", u"<html><head/><body><p align=\"center\">Hub</p></body></html>",
-                                       None))
-        self.label_singularity.setText(QCoreApplication.translate("SlideShifter", u"Singularity ", None))
-        self.label_shifter.setText(QCoreApplication.translate("SlideShifter",
-                                                              u"<html><head/><body><p align=\"center\">Shifter</p></body></html>",
-                                                              None))
-        self.label_tracking.setText(QCoreApplication.translate("SlideShifter",
-                                                               u"\u041e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u043d\u0438\u0435:",
-                                                               None))
+        SlideShifter.setWindowTitle(QCoreApplication.translate("SlideShifter", "Slide Shifter", None))
+        self.start_button.setText(QCoreApplication.translate("SlideShifter", "Начать", None))
+        self.label_shifter.setText(QCoreApplication.translate("SlideShifter", "Shifter", None))
+        self.label_tracking.setText(QCoreApplication.translate("SlideShifter", "Отслеживание", None))
+        self.label_camera.setText(QCoreApplication.translate("SlideShifter", "Камера", None))
+        self.label_slide.setText(QCoreApplication.translate("SlideShifter", "Slide", None))
+        self.stop_button.setText(QCoreApplication.translate("SlideShifter", "Приостановить", None))
+        self.label_by.setText(QCoreApplication.translate("SlideShifter", "by", None))
+        self.label_singularity.setText(QCoreApplication.translate("SlideShifter", "Singularity", None))
+        self.label_hub.setText(QCoreApplication.translate("SlideShifter", "Hub", None))
 
     def connect_buttons(self):
         """Activate buttons"""
 
         self.start_button.clicked.connect(self.start_hand_tracking)
         self.stop_button.clicked.connect(self.stop_hand_tracking)
+        self.comboBox_camera.activated.connect(self.activate_camera)
+        self.comboBox_tracking.activated.connect(self.choosing_hand_to_track)
 
     def get_connected_cameras(self):
         """Get the ID of all cameras connected to the PC"""
