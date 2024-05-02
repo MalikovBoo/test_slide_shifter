@@ -113,8 +113,8 @@ class UiSlideShifter(QMainWindow):
         self.log_text_edit.setObjectName(u"log_text_edit")
         self.log_text_edit.setReadOnly(True)
         self.log_text_edit.setStyleSheet(u"background-color: rgb(32, 32, 32);\n"
-                                    "color: rgb(229, 231, 231);\n"
-                                    "font: 300 18pt \"Helvetica Neue\";")
+                                         "color: rgb(229, 231, 231);\n"
+                                         "font: 300 18pt \"Helvetica Neue\";")
         self.gridLayout.addWidget(self.log_text_edit, 6, 0, 1, 6)
 
         self.label_by = QLabel(self.centralwidget)
@@ -622,25 +622,11 @@ class HandTracking:
 
 def run_application():
     """Program launch"""
-
-    window.setupUi(window)
-    window.show()
-
-    ht.hand_tracking_function()
-
-    sys.exit(2)
-
-
-if __name__ == "__main__":
     try:
-        app = QApplication(sys.argv)
-        window = UiSlideShifter()
-    except Exception:
-        sys.exit(1)
+        window.setupUi(window)
+        window.show()
 
-    try:
-        ht = HandTracking()
-        run_application()
+        ht.hand_tracking_function()
 
     except Exception:
         traceback_str = traceback.format_exc()
@@ -648,3 +634,10 @@ if __name__ == "__main__":
                                   f"Свяжитесь с исполнителем и отправьте скриншот ошибки.\n\n"
                                   f"{traceback_str}")
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = UiSlideShifter()
+    ht = HandTracking()
+    run_application()
