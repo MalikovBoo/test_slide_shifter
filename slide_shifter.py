@@ -111,6 +111,7 @@ class UiSlideShifter(QMainWindow):
 
         self.log_text_edit = QTextEdit(self.centralwidget)
         self.log_text_edit.setObjectName(u"log_text_edit")
+        self.log_text_edit.setReadOnly(True)
         self.log_text_edit.setStyleSheet(u"background-color: rgb(32, 32, 32);\n"
                                     "color: rgb(229, 231, 231);\n"
                                     "font: 300 18pt \"Helvetica Neue\";")
