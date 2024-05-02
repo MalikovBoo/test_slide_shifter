@@ -17,11 +17,9 @@ colorama==0.4.4
 contourpy==1.2.0
 crashtest==0.4.1
 cycler==0.12.1
-distlib==0.3.6
 Django==4.2.1
 dulwich==0.21.5
 Eel==0.16.0
-filelock==3.12.0
 Flask==2.0.2
 flask-restx==0.5.1
 Flask-SQLAlchemy==2.5.1
@@ -61,7 +59,6 @@ pefile==2023.2.7
 pexpect==4.8.0
 Pillow==10.1.0
 pkginfo==1.9.6
-platformdirs==3.5.1
 poetry==1.5.1
 poetry-core==1.6.1
 poetry-plugin-export==1.4.0
@@ -76,9 +73,6 @@ PyGetWindow==0.0.9
 pyinstaller==6.2.0
 pyinstaller-hooks-contrib==2023.10
 PyMsgBox==1.0.9
-pyobjc-core==10.1
-pyobjc-framework-Cocoa==10.1
-pyobjc-framework-Quartz==10.1
 pyparsing==3.1.1
 pyperclip==1.8.2
 pyproject_hooks==1.0.0
@@ -111,7 +105,6 @@ virtualenv==20.23.0
 webencodings==0.5.1
 Werkzeug==2.0.2
 whichcraft==0.6.1
-xattr==0.10.1
 zipp==3.6.0
 zope.event==5.0
 zope.interface==6.1
