@@ -386,8 +386,12 @@ class HandTracking:
 
     def setup_units(self, img, average_length: float, cnt: int, position: str):
         """Determining values for the hand in the basic and gesture positions"""
+        
+        if self.hand_to_track is None:
+            lm_list = self.detector.find_position(img, exact_hand="Right")
+        else:
+            lm_list = self.detector.find_position(img, exact_hand=self.hand_to_track)
 
-        lm_list = self.detector.find_position(img, exact_hand="Right")
         x = self.find_x_coordinate_of_thumbs(lm_list)[0]
 
         if x is not None:
